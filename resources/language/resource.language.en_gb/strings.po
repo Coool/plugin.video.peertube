@@ -39,5 +39,5 @@ msgid "Delete downloaded videos when Kodi exits"
 msgstr ""
 
 msgctxt "#30005"
-msgid "Filter local or all videos ( for browsing only )"
+msgid "Filter local or all videos (for browsing only)"
 msgstr ""
