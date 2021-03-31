@@ -1,11 +1,14 @@
-# A Kodi Addon to play video hosted on the peertube service (http://joinpeertube.org/)
-#
-# TODO: - Delete downloaded files by default
-#       - Allow people to choose if they want to keep their download after watching?
-#       - Do sanity checks on received data
-#       - Handle languages better (with .po files)
-#       - Get the best quality torrent given settings and/or available bandwidth
-#         See how they do that in the peerTube client's code
+""" A Kodi Addon to play video hosted on the PeerTube service
+    (http://joinpeertube.org/)
+
+TODO:
+- Delete downloaded files by default
+- Allow people to choose if they want to keep their download after watching?
+- Do sanity checks on received data
+- Handle languages better (with .po files)
+- Get the best quality torrent given settings and/or available bandwidth
+  See how they do that in the peerTube client's code
+"""
 import sys
 
 try:
@@ -22,7 +25,6 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
-import xbmcvfs
 
 
 class PeertubeAddon():
@@ -51,7 +53,8 @@ class PeertubeAddon():
         self.plugin_id = plugin_id
 
         # Select preferred instance by default
-        self.selected_inst = addon.getSetting('preferred_instance')
+        self.selected_inst = 'https://{}'\
+                             .format(addon.getSetting('preferred_instance'))
 
         # Get the number of videos to show per page
         self.items_per_page = int(addon.getSetting('items_per_page'))
@@ -102,20 +105,25 @@ class PeertubeAddon():
             response.raise_for_status()
         except requests.HTTPError as e:
             xbmcgui.Dialog().notification('Communication error',
-                                          'Error during request on {0}'
-                                          .format(self.selected_inst),
+                                          'Error when sending request {0}'
+                                          .format(req),
                                           xbmcgui.NOTIFICATION_ERROR)
-            # Print the JSON as it may contain an 'error' key with the details
-            # of the error
-            self.debug('Error => "{}"'.format(data['error']))
+            # If the JSON contains an 'error' key, print it
+            error_details = data.get('error')
+            if error_details is not None:
+                self.debug('Error => "{}"'.format(data['error']))
             raise e
 
-        # Return when no results are found
-        if data['total'] == 0:
-            self.debug('No result found')
-            return None
-        else:
-            self.debug('Found {0} results'.format(data['total']))
+        # Try to get the number of elements in the response
+        results_found = data.get('total', None)
+        # If the information is available in the response, use it
+        if results_found is not None:
+            # Return when no results are found
+            if results_found == 0:
+                self.debug('No result found')
+                return None
+            else:
+                self.debug('Found {0} results'.format(results_found))
 
         return data
 
@@ -134,7 +142,9 @@ class PeertubeAddon():
 
             if data_type == 'videos':
                 # Add thumbnail
-                list_item.setArt({'thumb': self.selected_inst + '/' + data['thumbnailPath']})
+                list_item.setArt({
+                    'thumb': '{0}/{1}'.format(self.selected_inst,
+                                              data['thumbnailPath'])})
 
                 # Set a fanart image for the list item.
                 # list_item.setProperty('fanart_image', data['thumb'])
@@ -148,7 +158,8 @@ class PeertubeAddon():
 
                 # For videos, add a rating based on likes and dislikes
                 if data['likes'] > 0 or data['dislikes'] > 0:
-                    info['rating'] = data['likes']/(data['likes'] + data['dislikes'])
+                    info['rating'] = data['likes'] / (
+                        data['likes'] + data['dislikes'])
 
                 # Set additional info for the list item.
                 list_item.setInfo('video', info)
@@ -156,51 +167,16 @@ class PeertubeAddon():
                 # Videos are playable
                 list_item.setProperty('IsPlayable', 'true')
 
-                # Find the URL of the best possible video matching user's preferences
-                # TODO: Error handling
-                current_res = 0
-                higher_res = -1
-                torrent_url = ''
-                response = requests.get(self.selected_inst + '/api/v1/videos/'
-                                        + data['uuid'])
-                metadata = response.json()
-                self.debug('Looking for the best possible video quality matching user preferences')
-                for f in metadata['files']:
-                    # Get file resolution
-                    res = f['resolution']['id']
-                    if res == self.preferred_resolution:
-                        # Stop directly, when we find the exact same resolution as the user's preferred one
-                        self.debug('Found video with preferred resolution')
-                        torrent_url = f['torrentUrl']
-                        break
-                    elif res < self.preferred_resolution and res > current_res:
-                        # Else, try to find the best one just below the user's preferred one
-                        self.debug('Found video with good lower resolution'
-                                   '({0})'.format(f['resolution']['label']))
-                        torrent_url = f['torrentUrl']
-                        current_res = res
-                    elif res > self.preferred_resolution and (res < higher_res or higher_res == -1):
-                        # In the worst case, we'll take the one just above the user's preferred one
-                        self.debug('Saving video with higher resolution ({0})'
-                                   'as a possible alternative'
-                                   .format(f['resolution']['label']))
-                        backup_url = f['torrentUrl']
-                        higher_res = res
-
-                # Use smallest file with an higher resolution, when we didn't find a resolution equal or
-                # lower than the user's preferred one
-                if not torrent_url:
-                    self.debug('Using video with higher resolution as alternative')
-                    torrent_url = backup_url
-
-                # Compose the correct URL for Kodi
+                # Build the Kodi URL to play the associated video only with the
+                # id of the video. The instance is omitted because the
+                # currently selected instance will be used automatically.
                 url = self.build_kodi_url({
                         'action': 'play_video',
-                        'url': torrent_url
+                        'id': data['uuid']
                         })
 
             elif data_type == 'instances':
-                # TODO: Add a context menu to select instance as preferred instance
+                # TODO: Add a context menu to select instance as preferred
                 # Instances are not playable
                 list_item.setProperty('IsPlayable', 'false')
 
@@ -224,6 +200,71 @@ class PeertubeAddon():
             listing.append((url, list_item, True))
 
         return listing
+
+    def get_video_url(self, video_id, instance=None):
+        """Find the URL of the video with the best possible quality matching
+        user's preferences.
+
+        :param video_id: ID of the torrent linked to the video
+        :type video_id: str
+        :param instance: PeerTube instance hosting the video (optional)
+        :type instance: str
+        """
+
+        # If no instance was provided, use the selected one (internal call)
+        if instance is None:
+            instance = self.selected_inst
+        else:
+            # If an instance was provided (external call), ensure the URL is
+            # prefixed with HTTPS
+            if not instance.startswith('https://'):
+                instance = 'https://{}'.format(instance)
+
+        current_res = 0
+        higher_res = -1
+        torrent_url = ''
+
+        # Retrieve the information about the video
+        metadata = self.query_peertube(urljoin(instance,
+                                               '/api/v1/videos/{}'
+                                               .format(video_id)))
+
+        self.debug(
+            'Looking for the best resolution matching the user preferences')
+
+        for f in metadata['files']:
+            # Get the resolution
+            res = f['resolution']['id']
+            if res == self.preferred_resolution:
+                # Stop directly when we find the exact same resolution as the
+                # user's preferred one
+                self.debug('Found video with preferred resolution')
+                torrent_url = f['torrentUrl']
+                break
+            elif res < self.preferred_resolution and res > current_res:
+                # Otherwise, try to find the best one just below the user's
+                # preferred one
+                self.debug('Found video with good lower resolution'
+                           '({0})'.format(f['resolution']['label']))
+                torrent_url = f['torrentUrl']
+                current_res = res
+            elif (res > self.preferred_resolution
+                    and (res < higher_res or higher_res == -1)):
+                # In the worst case, we'll take the one just above the user's
+                # preferred one
+                self.debug('Saving video with higher resolution ({0})'
+                           'as a possible alternative'
+                           .format(f['resolution']['label']))
+                backup_url = f['torrentUrl']
+                higher_res = res
+
+        # When we didn't find a resolution equal or lower than the user's
+        # preferred one, use the resolution just above the preferred one
+        if not torrent_url:
+            self.debug('Using video with higher resolution as alternative')
+            torrent_url = backup_url
+
+        return torrent_url
 
     def build_video_rest_api_request(self, search, start):
         """Build the URL of an HTTP request using the PeerTube videos REST API.
@@ -284,20 +325,24 @@ class PeertubeAddon():
         }
 
         # Join the base URL with the REST API and the parameters
-        req = '{0}?{1}'.format('https://instances.joinpeertube.org/api/v1/instances',
-                               urlencode(params))
+        req = 'https://instances.joinpeertube.org/api/v1/instances?{0}'\
+            .format(urlencode(params))
 
         return req
 
     def search_videos(self, start):
         """
-        Function to search for videos on a PeerTube instance and navigate in the results
+        Function to search for videos on a PeerTube instance and navigate
+        in the results
+
         :param start: string
         :result: None
         """
 
         # Show a 'Search videos' dialog
-        search = xbmcgui.Dialog().input(heading='Search videos on ' + self.selected_inst, type=xbmcgui.INPUT_ALPHANUM)
+        search = xbmcgui.Dialog().input(
+            heading='Search videos on {}'.format(self.selected_inst),
+            type=xbmcgui.INPUT_ALPHANUM)
 
         # Go back to main menu when user cancels
         if not search:
@@ -311,7 +356,9 @@ class PeertubeAddon():
 
         # Exit directly when no result is found
         if not results:
-            xbmcgui.Dialog().notification('No videos found', 'No videos found matching query', xbmcgui.NOTIFICATION_WARNING)
+            xbmcgui.Dialog().notification('No videos found',
+                                          'No videos found matching query',
+                                          xbmcgui.NOTIFICATION_WARNING)
             return None
 
         # Create array of xmbcgui.ListItem's
@@ -325,7 +372,9 @@ class PeertubeAddon():
 
     def browse_videos(self, start):
         """
-        Function to navigate through all the video published by a PeerTube instance
+        Function to navigate through all the video published by a PeerTube
+        instance
+
         :param start: string
         :return: None
         """
@@ -369,13 +418,15 @@ class PeertubeAddon():
 
     def play_video_continue(self, data):
         """
-        Callback function to let the play_video function resume when the PeertubeDownloader
-            has downloaded all the torrent's metadata
+        Callback function to let the play_video function resume when the
+        PeertubeDownloader has downloaded all the torrent's metadata
+
         :param data: dict
         :return: None
         """
 
-        self.debug('Received metadata_downloaded signal, will start playing media')
+        self.debug(
+            'Received metadata_downloaded signal, will start playing media')
         self.play = 1
         self.torrent_f = data['file']
 
@@ -393,8 +444,11 @@ class PeertubeAddon():
         # Start a downloader thread
         AddonSignals.sendSignal('start_download', {'url': torrent_url})
 
-        # Wait until the PeerTubeDownloader has downloaded all the torrent's metadata
-        AddonSignals.registerSlot('plugin.video.peertube', 'metadata_downloaded', self.play_video_continue)
+        # Wait until the PeerTubeDownloader has downloaded all the torrent's
+        # metadata
+        AddonSignals.registerSlot('plugin.video.peertube',
+                                  'metadata_downloaded',
+                                  self.play_video_continue)
         timeout = 0
         while self.play == 0 and timeout < 10:
             xbmc.sleep(1000)
@@ -402,7 +456,10 @@ class PeertubeAddon():
 
         # Abort in case of timeout
         if timeout == 10:
-            xbmcgui.Dialog().notification('Download timeout', 'Timeout fetching ' + torrent_url, xbmcgui.NOTIFICATION_ERROR)
+            xbmcgui.Dialog().notification('Download timeout',
+                                          'Timeout fetching {}'
+                                          .format(torrent_url),
+                                          xbmcgui.NOTIFICATION_ERROR)
             return None
         else:
             # Wait a little before starting playing the torrent
@@ -422,8 +479,11 @@ class PeertubeAddon():
         :return: None
         """
 
-        self.selected_inst = 'https://' + instance
-        xbmcgui.Dialog().notification('Current instance changed', 'Changed current instance to {0}'.format(self.selected_inst), xbmcgui.NOTIFICATION_INFO)
+        self.selected_inst = 'https://{}'.format(instance)
+        xbmcgui.Dialog().notification('Current instance changed',
+                                      'Changed current instance to {0}'
+                                      .format(self.selected_inst),
+                                      xbmcgui.NOTIFICATION_INFO)
         self.debug('Changing currently selected instance to {0}'
                    .format(self.selected_inst))
 
@@ -496,12 +556,19 @@ class PeertubeAddon():
                 # Browse peerTube instances
                 self.browse_instances(params['start'])
             elif action == 'play_video':
-                # Play video from provided URL.
-                self.play_video(params['url'])
+                # This action comes with the id of the video to play as
+                # parameter. The instance may also be in the parameters. Use
+                # these parameters to retrieve the complete URL (containing the
+                # resolution).
+                url = self.get_video_url(instance=params.get('instance'),
+                                         video_id=params.get('id'))
+                # Play the video using the URL
+                self.play_video(url)
             elif action == 'select_instance':
                 self.select_instance(params['url'])
         else:
-            # Display the addon's main menu when the plugin is called from Kodi UI without any parameters
+            # Display the addon's main menu when the plugin is called from
+            # Kodi UI without any parameters
             self.main_menu()
 
         return None
