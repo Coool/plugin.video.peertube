@@ -1,23 +1,45 @@
-import libtorrent
-import time, sys
-import xbmc, xbmcvfs
+# -*- coding: utf-8 -*-
+"""
+    PeerTube service to download torrents in the background
+
+    Copyright (C) 2018 Cyrille Bollu
+    Copyright (C) 2021 Thomas Bétous
+
+    SPDX-License-Identifier: GPL-3.0-only
+    See LICENSE.txt for more information.
+"""
+
 import AddonSignals
 from threading import Thread
+import xbmc
+import xbmcvfs
+
+from resources.lib.kodi_utils import debug, set_property
 
 class PeertubeDownloader(Thread):
     """
-    A class to download peertube torrents in the background
+    A class to download PeerTube torrents in the background
     """
 
     def __init__(self, url, temp_dir):
         """
-        Initialise a PeertubeDownloader instance for downloading the torrent specified by url
+        Initialise a PeertubeDownloader instance for downloading the torrent
+        specified by url
+
         :param url, temp_dir: str
         :return: None
         """
-        Thread.__init__(self)
+        super(PeertubeDownloader, self).__init__(self)
         self.torrent = url
         self.temp_dir = temp_dir
+
+    def debug(self, message):
+        """Log a debug message
+
+        :param str message: Message to log (will be prefixed with the name of
+        the class)
+        """
+        debug('PeertubeDownloader: {}'.format(message))
 
     def run(self):
         """
@@ -26,51 +48,56 @@ class PeertubeDownloader(Thread):
         :return: None
         """
 
-        xbmc.log('PeertubeDownloader: Opening bitTorent session', xbmc.LOGDEBUG)
-        # Open bitTorrent session
+        self.debug('Opening BitTorent session')
+        # Open BitTorrent session
         ses = libtorrent.session()
         ses.listen_on(6881, 6891)
 
         # Add torrent
-        xbmc.log('PeertubeDownloader: Adding torrent ' + self.torrent, xbmc.LOGDEBUG)
+        self.debug('Adding torrent {}'.format(self.torrent))
         h = ses.add_torrent({'url': self.torrent, 'save_path': self.temp_dir})
 
         # Set sequential mode to allow watching while downloading
         h.set_sequential_download(True)
 
         # Download torrent
-        xbmc.log('PeertubeDownloader: Downloading torrent ' + self.torrent, xbmc.LOGDEBUG)
+        self.debug('Downloading torrent {}'.format(self.torrent))
         signal_sent = 0
         while not h.is_seed():
             xbmc.sleep(1000)
             s = h.status()
-            # Inform addon that all the metadata has been downloaded and that it may start playing the torrent
+            # Inform addon that all the metadata has been downloaded and that
+            # it may start playing the torrent
             if s.state >=3 and signal_sent == 0:
-                xbmc.log('PeertubeDownloader: Received all torrent metadata, notifying PeertubeAddon', xbmc.LOGDEBUG)
+                self.debug('Received all torrent metadata, notifying'
+                           ' PeertubeAddon')
                 i = h.torrent_file()
                 f = self.temp_dir + i.name()
                 AddonSignals.sendSignal('metadata_downloaded', {'file': f})
                 signal_sent = 1
 
-        # Everything is done
-        return
-
 class PeertubeService():
     """
+    Class used to run a service when Kodi starts
     """
 
     def __init__(self):
         """
         PeertubeService initialisation function
         """
-
-        xbmc.log('PeertubeService: Initialising', xbmc.LOGDEBUG)
         # Create our temporary directory
-        self.temp = xbmc.translatePath('special://temp') + '/plugin.video.peertube/'
+        self.temp = '{}{}'.format(xbmc.translatePath('special://temp'),
+                                  'plugin.video.peertube/')
         if not xbmcvfs.exists(self.temp):
             xbmcvfs.mkdir(self.temp)
 
-        return
+    def debug(self, message):
+        """Log a debug message
+
+        :param str message: Message to log (will be prefixed with the name of
+        the class)
+        """
+        debug('PeertubeService: {}'.format(message))
 
     def download_torrent(self, data):
         """
@@ -79,35 +106,52 @@ class PeertubeService():
         :return: None
         """
 
-        xbmc.log('PeertubeService: Received a start_download signal', xbmc.LOGDEBUG)
-        downloader = PeertubeDownloader(data['url'], self.temp) 
+        self.debug('Received a start_download signal')
+        downloader = PeertubeDownloader(data['url'], self.temp)
         downloader.start()
-   
-        return
 
     def run(self):
         """
-        Main loop of the PeertubeService class, registring the start_download signal to start a 
-            peertubeDownloader thread when needed, and exit when Kodi is shutting down
+        Main loop of the PeertubeService class
+
+        It registers the start_download signal to start a PeertubeDownloader
+        thread when needed, and exit when Kodi is shutting down.
         """
 
-        # Launch the download_torrent callback function when the 'start_download' signal is received
-        AddonSignals.registerSlot('plugin.video.peertube', 'start_download', self.download_torrent)
+        self.debug('Starting')
+
+        # Launch the download_torrent callback function when the
+        # 'start_download' signal is received
+        AddonSignals.registerSlot('plugin.video.peertube',
+                                  'start_download',
+                                  self.download_torrent)
 
         # Monitor Kodi's shutdown signal
-        xbmc.log('PeertubeService: service started, Waiting for signals', xbmc.LOGDEBUG)
+        self.debug('Service started, waiting for signals')
         monitor = xbmc.Monitor()
         while not monitor.abortRequested():
             if monitor.waitForAbort(1):
                 # Abort was requested while waiting. We must exit
                 # TODO: Clean temporary directory
+                self.debug('Exiting')
                 break
-       
-        return
 
 if __name__ == '__main__':
-    # Start a peertubeService instance
-    xbmc.log('PeertubeService: Starting', xbmc.LOGDEBUG)
+    # Create a PeertubeService instance
     service = PeertubeService()
+
+    # Import libtorrent here to manage when the library is not installed
+    try:
+        import libtorrent
+        LIBTORRENT_IMPORTED = True
+    except ImportError as exception:
+        LIBTORRENT_IMPORTED = False
+        service.debug('The libtorrent library could not be imported because of'
+                      ' the following error:\n{}'.format(exception))
+
+    # Save whether libtorrent could be imported as a window property so that
+    # this information can be retrieved by the add-on
+    set_property('libtorrent_imported', str(LIBTORRENT_IMPORTED))
+
+    # Start the service
     service.run()
-    xbmc.log('PeertubeService: Exiting', xbmc.LOGDEBUG)

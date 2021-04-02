@@ -1,13 +1,13 @@
-""" A Kodi Addon to play video hosted on the PeerTube service
+# -*- coding: utf-8 -*-
+"""
+    A Kodi add-on to play video hosted on the PeerTube service
     (http://joinpeertube.org/)
 
-TODO:
-- Delete downloaded files by default
-- Allow people to choose if they want to keep their download after watching?
-- Do sanity checks on received data
-- Handle languages better (with .po files)
-- Get the best quality torrent given settings and/or available bandwidth
-  See how they do that in the peerTube client's code
+    Copyright (C) 2018 Cyrille Bollu
+    Copyright (C) 2021 Thomas Bétous
+
+    SPDX-License-Identifier: GPL-3.0-only
+    See LICENSE.txt for more information.
 """
 import sys
 
@@ -26,17 +26,22 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 
+from resources.lib.kodi_utils import debug, get_property, notif_error, \
+                                     notif_info, notif_warning, open_dialog
+
 
 class PeertubeAddon():
     """
     Main class of the addon
     """
 
+    # URL of the page which explains how to install libtorrent
+    HELP_URL = 'https://link.infini.fr/peertube-kodi-libtorrent'
+
     def __init__(self, plugin, plugin_id):
         """
         Initialisation of the PeertubeAddon class
         :param plugin, plugin_id: str, int
-        :return: None
         """
 
         # These 2 steps must be done first since the logging function requires
@@ -45,8 +50,6 @@ class PeertubeAddon():
         addon = xbmcaddon.Addon()
         # Get the add-on name
         self.addon_name = addon.getAddonInfo('name')
-
-        self.debug('Initialising')
 
         # Save addon URL and ID
         self.plugin_url = plugin
@@ -77,15 +80,21 @@ class PeertubeAddon():
         else:
             self.video_filter = 'local'
 
-        return None
+        # Check whether libtorrent could be imported by the service. The value
+        # of the associated property is retrieved only once and stored in an
+        # attribute because libtorrent is imported only once at the beginning
+        # of the service (we assume it is not possible to start the add-on
+        # before the service)
+        self.libtorrent_imported = \
+            get_property('libtorrent_imported') == 'True'
 
     def debug(self, message):
-        """Log a message in Kodi's log with the level xbmc.LOGDEBUG
+        """Log a debug message
 
-        :param message: Message to log
-        :type message: str
+        :param str message: Message to log (will be prefixed with the add-on
+        name)
         """
-        xbmc.log('{0}: {1}'.format(self.addon_name, message), xbmc.LOGDEBUG)
+        debug('{0}: {1}'.format(self.addon_name, message))
 
     def query_peertube(self, req):
         """
@@ -104,10 +113,8 @@ class PeertubeAddon():
         try:
             response.raise_for_status()
         except requests.HTTPError as e:
-            xbmcgui.Dialog().notification('Communication error',
-                                          'Error when sending request {0}'
-                                          .format(req),
-                                          xbmcgui.NOTIFICATION_ERROR)
+            notif_error(title='Communication error',
+                        message='Error when sending request {}'.format(req))
             # If the JSON contains an 'error' key, print it
             error_details = data.get('error')
             if error_details is not None:
@@ -336,7 +343,6 @@ class PeertubeAddon():
         in the results
 
         :param start: string
-        :result: None
         """
 
         # Show a 'Search videos' dialog
@@ -346,7 +352,7 @@ class PeertubeAddon():
 
         # Go back to main menu when user cancels
         if not search:
-            return None
+            return
 
         # Create the PeerTube REST API request for searching videos
         req = self.build_video_rest_api_request(search, start)
@@ -356,10 +362,9 @@ class PeertubeAddon():
 
         # Exit directly when no result is found
         if not results:
-            xbmcgui.Dialog().notification('No videos found',
-                                          'No videos found matching query',
-                                          xbmcgui.NOTIFICATION_WARNING)
-            return None
+            notif_warning(title='No videos found',
+                          message='No videos found matching the query.')
+            return
 
         # Create array of xmbcgui.ListItem's
         listing = self.create_list(results, 'videos', start)
@@ -368,15 +373,12 @@ class PeertubeAddon():
         xbmcplugin.addDirectoryItems(self.plugin_id, listing, len(listing))
         xbmcplugin.endOfDirectory(self.plugin_id)
 
-        return None
-
     def browse_videos(self, start):
         """
         Function to navigate through all the video published by a PeerTube
         instance
 
         :param start: string
-        :return: None
         """
 
         # Create the PeerTube REST API request for listing videos
@@ -392,13 +394,10 @@ class PeertubeAddon():
         xbmcplugin.addDirectoryItems(self.plugin_id, listing, len(listing))
         xbmcplugin.endOfDirectory(self.plugin_id)
 
-        return None
-
     def browse_instances(self, start):
         """
         Function to navigate through all PeerTube instances
         :param start: str
-        :return: None
         """
 
         # Create the PeerTube REST API request for browsing PeerTube instances
@@ -414,15 +413,12 @@ class PeertubeAddon():
         xbmcplugin.addDirectoryItems(self.plugin_id, listing, len(listing))
         xbmcplugin.endOfDirectory(self.plugin_id)
 
-        return None
-
     def play_video_continue(self, data):
         """
         Callback function to let the play_video function resume when the
         PeertubeDownloader has downloaded all the torrent's metadata
 
         :param data: dict
-        :return: None
         """
 
         self.debug(
@@ -430,14 +426,19 @@ class PeertubeAddon():
         self.play = 1
         self.torrent_f = data['file']
 
-        return None
-
     def play_video(self, torrent_url):
         """
         Start the torrent's download and play it while being downloaded
         :param torrent_url: str
-        :return: None
         """
+        # If libtorrent could not be imported, display a message and do not try
+        # download nor play the video as it will fail.
+        if not self.libtorrent_imported:
+            open_dialog(title='Error: libtorrent could not be imported',
+                        message='PeerTube cannot play videos without'
+                                ' libtorrent.\nPlease follow the instructions'
+                                ' at {}'.format(self.HELP_URL))
+            return
 
         self.debug('Starting torrent download ({0})'.format(torrent_url))
 
@@ -456,11 +457,9 @@ class PeertubeAddon():
 
         # Abort in case of timeout
         if timeout == 10:
-            xbmcgui.Dialog().notification('Download timeout',
-                                          'Timeout fetching {}'
-                                          .format(torrent_url),
-                                          xbmcgui.NOTIFICATION_ERROR)
-            return None
+            notif_error(title='Download timeout',
+                        message='Timeout fetching {}'.format(torrent_url))
+            return
         else:
             # Wait a little before starting playing the torrent
             xbmc.sleep(3000)
@@ -470,24 +469,18 @@ class PeertubeAddon():
         play_item = xbmcgui.ListItem(path=self.torrent_f)
         xbmcplugin.setResolvedUrl(self.plugin_id, True, listitem=play_item)
 
-        return None
-
     def select_instance(self, instance):
         """
         Change currently selected instance to 'instance' parameter
         :param instance: str
-        :return: None
         """
 
         self.selected_inst = 'https://{}'.format(instance)
-        xbmcgui.Dialog().notification('Current instance changed',
-                                      'Changed current instance to {0}'
-                                      .format(self.selected_inst),
-                                      xbmcgui.NOTIFICATION_INFO)
+        notif_info(title='Current instance changed',
+                   message='Changed current instance to {0}'
+                           .format(self.selected_inst))
         self.debug('Changing currently selected instance to {0}'
                    .format(self.selected_inst))
-
-        return None
 
     def build_kodi_url(self, parameters):
         """Build a Kodi URL based on the parameters.
@@ -501,8 +494,6 @@ class PeertubeAddon():
     def main_menu(self):
         """
         Addon's main menu
-        :param: None
-        :return: None
         """
 
         # Create a list for our items.
@@ -529,14 +520,11 @@ class PeertubeAddon():
         # Finish creating a virtual folder.
         xbmcplugin.endOfDirectory(self.plugin_id)
 
-        return None
-
     def router(self, paramstring):
         """
         Router function that calls other functions
         depending on the provided paramstring
         :param paramstring: dict
-        :return: None
         """
 
         # Parse a URL-encoded paramstring to the dictionary of
@@ -571,8 +559,13 @@ class PeertubeAddon():
             # Kodi UI without any parameters
             self.main_menu()
 
-        return None
-
+            # Display a warning if libtorrent could not be imported
+            if not self.libtorrent_imported:
+                open_dialog(title='Error: libtorrent could not be imported',
+                            message='You can still browse and search videos'
+                                    ' but you will not be able to play them.\n'
+                                    'Please follow the instructions at {}'
+                                    .format(self.HELP_URL))
 
 if __name__ == '__main__':
 
