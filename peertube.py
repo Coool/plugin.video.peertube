@@ -36,7 +36,7 @@ class PeertubeAddon():
     """
 
     # URL of the page which explains how to install libtorrent
-    HELP_URL = 'https://link.infini.fr/peertube-kodi-libtorrent'
+    HELP_URL = 'https://link.infini.fr/libtorrent-peertube-kodi'
 
     def __init__(self, plugin, plugin_id):
         """
