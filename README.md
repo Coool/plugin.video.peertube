@@ -1,13 +1,13 @@
-A kodi addon for watching content hosted on Peertube (http://joinpeertube.org/) 
+A Kodi add-on for watching content hosted on [Peertube](http://joinpeertube.org/).
 
 This code is still proof-of-concept but it works, and you're welcome to improve it.
 
-# Functionalities
+# Features
 
 * Browse all videos on a PeerTube instance 
-* Search for videos on a PeerTube instance (Only supported by 1.0.0-beta10+ instances)
+* Search for videos on a PeerTube instance
 * Select Peertube instance to use (Doesn't work yet)
-* Select the preferred video resolution; The plugin will try to play the select video resolution.
+* Select the preferred video resolution: the plugin will try to play the select video resolution.
 If it's not available, it will play the lower resolution that is the closest from your preference.
 If not available, it will play the higher resolution that is the closest from your preference.
 
@@ -16,15 +16,21 @@ If not available, it will play the higher resolution that is the closest from yo
 * Preferred PeerTube instance 
 * Preferred video resolution
 * Number of videos to display per page
-* Sort method to be used when listing videos (Currently, only 'views' and 'likes') 
+* Sort method to be used when listing videos (Currently, only 'views' and
+  'likes')
+* Select the filter to use when browsing the videos on an instance:
+  * local will only display the videos which are local to the selected instance
+  * all-local will only display the videos which are local to the selected
+    instance plus the private and unlisted videos **(requires admin privileges)**
 
 # Limitations
 
-* This addon doesn't support Webtorrent yet. So, it cannot download/share from/to regular PeerTube clients.
-The reason is that it uses the libtorrent python libray which doesn't support it yet (see https://github.com/arvidn/libtorrent/issues/223)
-* The addon doesn't delete the downloaded files atm. So, it may fills up your disk 
+* This add-on doesn't support Webtorrent yet. So, it cannot download/share from/to regular PeerTube clients.
+The reason is that it uses the libtorrent python library which doesn't support it yet (see https://github.com/arvidn/libtorrent/issues/223)
+* The add)on doesn't delete the downloaded files at the moment. So, it may fills up your disk.
 
 # Requirements
 
-* Kodi 17 or above
-* libtorrent python bindings (https://libtorrent.org/). On Debian type `apt install python-libtorrent` as root.
+* Kodi 17 (Krypton) or above
+* [libtorrent](https://libtorrent.org/) python bindings must be installed on
+  your machine (on Debian type `apt install python-libtorrent` as root).
