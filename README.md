@@ -1,13 +1,15 @@
-A Kodi add-on for watching content hosted on [Peertube](http://joinpeertube.org/).
+A Kodi add-on for watching content hosted on [PeerTube](http://joinpeertube.org/).
 
-This code is still proof-of-concept but it works, and you're welcome to improve
-it.
+This code is under development but some basic features work, and you're welcome
+to improve it.
+
+[[_TOC_]]
 
 # Features
 
 * Browse all videos on a PeerTube instance 
 * Search for videos on a PeerTube instance
-* Select Peertube instance to use (Doesn't work yet)
+* Select PeerTube instance to use (**doesn't work yet**)
 * Select the preferred video resolution: the plugin will try to play the select
   video resolution.
   If it's not available, it will play the lower resolution that is the closest
@@ -47,14 +49,12 @@ the add-on with:
 # Limitations
 
 * This add-on doesn't support Webtorrent yet. So, it cannot download/share
-  from/to regular PeerTube clients. The reason is that it uses the libtorrent
-  python library which doesn't support it yet (see
-  https://github.com/arvidn/libtorrent/issues/223)
+  from/to regular PeerTube clients.
 * The add-on doesn't delete the downloaded files at the moment. So, it may fill
   up your disk.
 
-# Requirements
+# Installation and requirements
 
-* Kodi 17 (Krypton) or above
-* [libtorrent](https://libtorrent.org/) python bindings must be installed on
-  your machine (on Debian type `apt install python-libtorrent` as root).
+Please read the
+[wiki](https://framagit.org/StCyr/plugin.video.peertube/-/wikis/home)
+for more information.

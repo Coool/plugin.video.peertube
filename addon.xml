@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.peertube" name="PeerTube" version="0.3.2" provider-name="Cyrille B. + Thomas B.">
+<addon id="plugin.video.peertube" name="PeerTube" version="1.0.0" provider-name="Cyrille B. + Thomas B.">
   <requires>
     <import addon="xbmc.python" version="2.25.0"/>
     <import addon="script.module.addon.signals" version="0.0.3"/>
@@ -19,16 +19,16 @@
     <forum></forum>
     <website>https://joinpeertube.org</website>
     <source>https://framagit.org/StCyr/plugin.video.peertube</source>
-    <news>
-0.3.2
-Bug fixes and improvements
-Fixes:
- - the search filter 'all-local' was selected by default which resulted in errors
+    <news>1.0.0
+
+Important note: if you are migrating from a version older than 1.x.x, ensure the URL of your preferred instance is not prefixed with "https://" (you may reset the add-on settings to default to use a valid initial value).
+
+New features:
+* Provide an external API requiring only the instance and the id of the video
+* Guide the user when libtorrent cannot be imported
+
 Improvements:
- - Replace urllib with requests to simplify the code
- - Handle better the errors when sending requests to the PeerTube instance
- - Create a logging function to improve maintainability
- - Warn the user that the 'all-local' filter requires admin privileges
+* Speed up the listing of videos when searching or browsing (the resolution and the full URL are now defined only when the user plays a video)
     </news>
     <assets>
       <icon>icon.png</icon>
