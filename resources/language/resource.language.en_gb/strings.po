@@ -34,9 +34,9 @@ msgctxt "#30003"
 msgid "Preferred video resolution"
 msgstr ""
 
-msgctxt "#30004"
-msgid "Delete downloaded videos when Kodi exits"
-msgstr ""
+#msgctxt "#30004"
+#msgid "Delete downloaded videos when Kodi exits"
+#msgstr ""
 
 msgctxt "#30005"
 msgid "Filter local or all videos (for browsing only)"
