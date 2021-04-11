@@ -1,7 +1,10 @@
 A Kodi add-on for watching content hosted on [PeerTube](http://joinpeertube.org/).
 
-This code is under development but some basic features work, and you're welcome
-to improve it.
+This add-on is under development so only basic features work, and you're
+welcome to improve it.  
+See [contribution guidelines](contributing.md) and
+[pending issues](https://framagit.org/StCyr/plugin.video.peertube/-/issues) to
+start.
 
 [[_TOC_]]
 
