@@ -9,7 +9,7 @@ to improve it.
 
 * Browse all videos on a PeerTube instance 
 * Search for videos on a PeerTube instance
-* Select PeerTube instance to use (**doesn't work yet**)
+* Select the PeerTube instance to use
 * Select the preferred video resolution: the plugin will try to play the select
   video resolution.
   If it's not available, it will play the lower resolution that is the closest
@@ -53,7 +53,7 @@ the add-on with:
 * The add-on doesn't delete the downloaded files at the moment. So, it may fill
   up your disk.
 
-# Installation and requirements
+# Installation and prerequisites
 
 Please read the
 [wiki](https://framagit.org/StCyr/plugin.video.peertube/-/wikis/home)

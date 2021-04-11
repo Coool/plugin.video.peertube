@@ -26,8 +26,9 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 
-from resources.lib.kodi_utils import debug, get_property, notif_error, \
-                                     notif_info, notif_warning, open_dialog
+from resources.lib.kodi_utils import (
+    debug, get_property, get_setting, notif_error, notif_info, notif_warning,
+    open_dialog, set_setting)
 
 
 class PeertubeAddon():
@@ -44,29 +45,26 @@ class PeertubeAddon():
         :param plugin, plugin_id: str, int
         """
 
-        # These 2 steps must be done first since the logging function requires
-        # the add-on name
-        # Get an Addon instance
-        addon = xbmcaddon.Addon()
-        # Get the add-on name
-        self.addon_name = addon.getAddonInfo('name')
+        # This step must be done first because the logging function requires
+        # the name of the add-on
+        self.addon_name = xbmcaddon.Addon().getAddonInfo('name')
 
         # Save addon URL and ID
         self.plugin_url = plugin
         self.plugin_id = plugin_id
 
         # Select preferred instance by default
-        self.selected_inst = 'https://{}'\
-                             .format(addon.getSetting('preferred_instance'))
+        self.selected_inst ='https://{}'\
+            .format(get_setting('preferred_instance'))
 
         # Get the number of videos to show per page
-        self.items_per_page = int(addon.getSetting('items_per_page'))
+        self.items_per_page = int(get_setting('items_per_page'))
 
         # Get the video sort method
-        self.sort_method = addon.getSetting('video_sort_method')
+        self.sort_method = get_setting('video_sort_method')
 
         # Get the preferred resolution for video
-        self.preferred_resolution = addon.getSetting('preferred_resolution')
+        self.preferred_resolution = get_setting('preferred_resolution')
 
         # Nothing to play at initialisation
         self.play = 0
@@ -75,7 +73,7 @@ class PeertubeAddon():
         # Get the video filter from the settings that will be used when
         # browsing the videos. The value from the settings is converted into
         # one of the expected values by the REST APIs ("local" or "all-local")
-        if 'all-local' in addon.getSetting('video_filter'):
+        if 'all-local' in get_setting('video_filter'):
             self.video_filter = 'all-local'
         else:
             self.video_filter = 'local'
@@ -475,12 +473,19 @@ class PeertubeAddon():
         :param instance: str
         """
 
+        # Update the object attribute even though it is not used currently but
+        # it may be useful in case reuselanguageinvoker is enabled.
         self.selected_inst = 'https://{}'.format(instance)
+
+        # Update the preferred instance in the settings so that this choice is
+        # reused on the next run and the next call of the add-on
+        set_setting('preferred_instance', instance)
+
+        # Notify the user and log the event
+        message = '{0} is now the selected instance'.format(self.selected_inst)
         notif_info(title='Current instance changed',
-                   message='Changed current instance to {0}'
-                           .format(self.selected_inst))
-        self.debug('Changing currently selected instance to {0}'
-                   .format(self.selected_inst))
+                   message=message)
+        self.debug(message)
 
     def build_kodi_url(self, parameters):
         """Build a Kodi URL based on the parameters.

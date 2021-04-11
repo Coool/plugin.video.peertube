@@ -8,6 +8,7 @@
     See LICENSE.txt for more information.
 """
 import xbmc
+import xbmcaddon
 import xbmcgui
 
 
@@ -21,12 +22,21 @@ def debug(message):
 def get_property(name):
     """Retrieve the value of a window property related to the add-on
 
-    :param str name: name of the property which value will be retrieved (the
+    :param str name: Name of the property which value will be retrieved (the
     actual name of the property is prefixed with "peertube_")
-    :return: the value of the window property
+    :return: Value of the window property
     :rtype: str
     """
     return xbmcgui.Window(10000).getProperty('peertube_{}'.format(name))
+
+def get_setting(setting_name):
+    """Retrieve the value of a setting
+
+    :param str setting_name: Name of the setting
+    :return: Value of the setting named setting_name
+    :rtype: str
+    """
+    return xbmcaddon.Addon().getSetting(setting_name)
 
 def notif_error(title, message):
     """Display a notification with the error icon
@@ -74,3 +84,11 @@ def set_property(name, value):
     :param str value: New value of the property
     """
     xbmcgui.Window(10000).setProperty('peertube_{}'.format(name), value)
+
+def set_setting(setting_name, setting_value):
+    """Modify the value of a setting
+
+    :param str setting_name: Name of the setting
+    :param str setting_value: New value of the setting
+    """
+    xbmcaddon.Addon().setSetting(setting_name, setting_value)
