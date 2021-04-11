@@ -9,10 +9,10 @@
     See LICENSE.txt for more information.
 """
 
-import AddonSignals
+import AddonSignals # Module exists only in Kodi - pylint: disable=import-error
 from threading import Thread
-import xbmc
-import xbmcvfs
+import xbmc # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
+import xbmcvfs # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
 
 from resources.lib.kodi_utils import debug, set_property
 
@@ -29,7 +29,7 @@ class PeertubeDownloader(Thread):
         :param url, temp_dir: str
         :return: None
         """
-        super(PeertubeDownloader, self).__init__(self)
+        Thread.__init__(self)
         self.torrent = url
         self.temp_dir = temp_dir
 

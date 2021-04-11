@@ -7,9 +7,9 @@
     SPDX-License-Identifier: GPL-3.0-only
     See LICENSE.txt for more information.
 """
-import xbmc
+import xbmc # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
 import xbmcaddon
-import xbmcgui
+import xbmcgui # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
 
 
 def debug(message):

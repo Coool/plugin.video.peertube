@@ -1,3 +1,8 @@
+default:
+  # Cancel any pipeline when a newer instance is started (does not seem to work
+  # currently for the detached pipelines created from merge requests...)
+  interruptible: true
+
 stages:
   - validation
   - release
@@ -7,10 +12,38 @@ stages:
 .apt_get_update: &apt_get_update
 - apt-get update > /dev/null
 
+.python3_prep: &python3_prep
+- apt-get install --yes python3-dev python3-pip > /dev/null
+- python3 -m pip --quiet install -r misc/python_requirements.txt
+
 .release_script_prep: &release_script_prep
 - apt-get install --yes python3-dev python3-pip git > /dev/null
 - git clone https://framagit.org/thombet/scripts-for-kodi-add-ons.git
 - python3 -m pip --quiet install -r scripts-for-kodi-add-ons/create-new-add-on-release/requirements.txt
+
+# Quality job: check no pylint violations are reported.
+quality:
+  stage: validation
+  # Do not get any artifacts from previous jobs
+  dependencies: []
+  rules:
+    # Run this job only on merge requests and only as "manual" (it would have
+    # been better to configure this at pipeline-level with "workflow" but it
+    # does not support "when: manual"...).
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual
+  before_script:
+  - *apt_get_update
+  - *python3_prep
+  script:
+    - find . -iname '*.py' | xargs -t python3 -m pylint --rcfile=misc/pylint-rcfile.txt | tee pylint.log
+  artifacts:
+    name: "quality-logs-$CI_JOB_ID"
+    expose_as: "Quality Logs"
+    paths:
+      - pylint.log
+    expire_in: 1 week
+    when: always
 
 # Pre-release job: will be available in all the merge requests with release
 # branches in order to verify the release can be actually created. The

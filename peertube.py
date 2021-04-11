@@ -18,12 +18,12 @@ except ImportError:
     # Python 2.x
     from urlparse import parse_qsl
 
-import AddonSignals
+import AddonSignals # Module exists only in Kodi - pylint: disable=import-error
 import requests
 from requests.compat import urljoin, urlencode
-import xbmc
+import xbmc # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
 import xbmcaddon
-import xbmcgui
+import xbmcgui # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
 import xbmcplugin
 
 from resources.lib.kodi_utils import (
@@ -69,6 +69,7 @@ class PeertubeAddon():
         # Nothing to play at initialisation
         self.play = 0
         self.torrent_name = ''
+        self.torrent_f = ''
 
         # Get the video filter from the settings that will be used when
         # browsing the videos. The value from the settings is converted into
@@ -225,19 +226,28 @@ class PeertubeAddon():
             if not instance.startswith('https://'):
                 instance = 'https://{}'.format(instance)
 
-        current_res = 0
-        higher_res = -1
-        torrent_url = ''
-
         # Retrieve the information about the video
         metadata = self.query_peertube(urljoin(instance,
                                                '/api/v1/videos/{}'
                                                .format(video_id)))
 
+        # Depending if WebTorrent is enabled or not, the files corresponding to
+        # different resolutions available for a video may be stored in "files"
+        # or "streamingPlaylists[].files". Note that "files" will always exist
+        # in the response but may be empty.
+        if len(metadata['files']) != 0:
+            files = metadata['files']
+        else:
+            files = metadata['streamingPlaylists'][0]['files']
+
         self.debug(
             'Looking for the best resolution matching the user preferences')
 
-        for f in metadata['files']:
+        current_res = 0
+        higher_res = -1
+        torrent_url = ''
+
+        for f in files:
             # Get the resolution
             res = f['resolution']['id']
             if res == self.preferred_resolution:

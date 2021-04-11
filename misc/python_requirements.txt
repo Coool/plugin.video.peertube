@@ -1,0 +1,3 @@
+Kodistubs==18.0.0
+pylint
+requests
