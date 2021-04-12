@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.peertube" name="PeerTube" version="1.0.0" provider-name="Cyrille B. + Thomas B.">
+<addon id="plugin.video.peertube" name="PeerTube" version="1.0.1" provider-name="Cyrille B. + Thomas B.">
   <requires>
     <import addon="xbmc.python" version="2.25.0"/>
     <import addon="script.module.addon.signals" version="0.0.3"/>
@@ -19,16 +19,14 @@
     <forum></forum>
     <website>https://joinpeertube.org</website>
     <source>https://framagit.org/StCyr/plugin.video.peertube</source>
-    <news>1.0.0
+    <news>Version 1.0.1 (12 April 2021)
 
 Important note: if you are migrating from a version older than 1.x.x, ensure the URL of your preferred instance is not prefixed with "https://" (you may reset the add-on settings to default to use a valid initial value).
 
-New features:
-* Provide an external API requiring only the instance and the id of the video
-* Guide the user when libtorrent cannot be imported
-
-Improvements:
-* Speed up the listing of videos when searching or browsing (the resolution and the full URL are now defined only when the user plays a video)
+Bugs fixed:
+* When selecting an instance from the list of instances, this instance will actually be used as the currently selected instance when browsing and searching videos
+* Correctly play videos which are hosted without WebTorrent support
+* Hide the setting related to download files because it was not used
     </news>
     <assets>
       <icon>icon.png</icon>
