@@ -34,10 +34,10 @@ class PeerTube:
 
         # The value "video_filter" is directly retrieved from the settings so
         # it must be converted into one of the expected values by the REST APIs
-        if 'all-local' in video_filter:
-            self.filter = 'all-local'
+        if "all-local" in video_filter:
+            self.filter = "all-local"
         else:
-            self.filter = 'local'
+            self.filter = "local"
 
     def _request(self, method, url, params=None, data=None):
         """Call a REST API on the instance

@@ -19,7 +19,7 @@ def debug(message):
     (the name is hard-coded to avoid calling xbmcaddon each time since the name
     should not change)
     """
-    xbmc.log('[PeerTube] {}'.format(message), xbmc.LOGDEBUG)
+    xbmc.log("[PeerTube] {}".format(message), xbmc.LOGDEBUG)
 
 def get_property(name):
     """Retrieve the value of a window property related to the add-on
@@ -29,7 +29,7 @@ def get_property(name):
     :return: Value of the window property
     :rtype: str
     """
-    return xbmcgui.Window(10000).getProperty('peertube_{}'.format(name))
+    return xbmcgui.Window(10000).getProperty("peertube_{}".format(name))
 
 def get_setting(setting_name):
     """Retrieve the value of a setting
@@ -85,7 +85,7 @@ def set_property(name, value):
     actual name of the property is prefixed with "peertube_")
     :param str value: New value of the property
     """
-    xbmcgui.Window(10000).setProperty('peertube_{}'.format(name), value)
+    xbmcgui.Window(10000).setProperty("peertube_{}".format(name), value)
 
 def set_setting(setting_name, setting_value):
     """Modify the value of a setting

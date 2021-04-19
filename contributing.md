@@ -77,13 +77,15 @@ The functions must be sorted alphabetically to make the maintenance easier.
 
 ## Coding style
 
-The code is still based on the design of the alpha version so the coding style
-is not mature yet.  
-A redesign is planned but until then please:
+Here are the rules to follow when modifying the code:
 * document the usage of functions following [Sphinx
   format](https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#python-signatures)
+* use double quotes instead of single quotes when defining strings (to avoid
+  escaping apostrophes which are common characters in English and other
+  languages)
 * follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) conventions. The
-  compliance can be checked with [pylint](https://www.pylint.org/) and the
+  compliance is checked in the `quality` job (more details are available in the
+  [CI file](.gitlab-ci.yml)). Pylint can also be run locally with the
   following commands:
 
 ```python
@@ -91,11 +93,7 @@ python3 -m pip install -r misc/python_requirements.txt
 python3 -m pylint --rcfile=misc/pylint-rcfile.txt
 ```
 
-The pylint violations are also checked in the `quality` job.
-
-More details are available in the [CI file](.gitlab-ci.yml).
-
-Note: pylint is run with python3 to have latest features whereas the add-on
+Note: pylint is run with python3 to have latest features even though the add-on
 only supports Kodi v18 Leia (which uses python2)
 
 ## How to release a new version of this add-on
