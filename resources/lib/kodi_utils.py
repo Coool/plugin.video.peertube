@@ -15,9 +15,11 @@ import xbmcgui # Kodistubs for Leia is not compatible with python3 / pylint: dis
 def debug(message):
     """Log a message in Kodi's log with the level xbmc.LOGDEBUG
 
-    :param str message: Message to log
+    :param str message: Message to log prefixed with the name of the add-on
+    (the name is hard-coded to avoid calling xbmcaddon each time since the name
+    should not change)
     """
-    xbmc.log(message, xbmc.LOGDEBUG)
+    xbmc.log('[PeerTube] {}'.format(message), xbmc.LOGDEBUG)
 
 def get_property(name):
     """Retrieve the value of a window property related to the add-on

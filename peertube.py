@@ -19,16 +19,15 @@ except ImportError:
     from urlparse import parse_qsl
 
 import AddonSignals # Module exists only in Kodi - pylint: disable=import-error
-import requests
-from requests.compat import urljoin, urlencode
+from requests.compat import urlencode
 import xbmc # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
-import xbmcaddon
 import xbmcgui # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
 import xbmcplugin
 
 from resources.lib.kodi_utils import (
     debug, get_property, get_setting, notif_error, notif_info, notif_warning,
     open_dialog, set_setting)
+from resources.lib.peertube import PeerTube, list_instances
 
 
 class PeertubeAddon():
@@ -45,10 +44,6 @@ class PeertubeAddon():
         :param plugin, plugin_id: str, int
         """
 
-        # This step must be done first because the logging function requires
-        # the name of the add-on
-        self.addon_name = xbmcaddon.Addon().getAddonInfo('name')
-
         # Save addon URL and ID
         self.plugin_url = plugin
         self.plugin_id = plugin_id
@@ -60,9 +55,6 @@ class PeertubeAddon():
         # Get the number of videos to show per page
         self.items_per_page = int(get_setting('items_per_page'))
 
-        # Get the video sort method
-        self.sort_method = get_setting('video_sort_method')
-
         # Get the preferred resolution for video
         self.preferred_resolution = get_setting('preferred_resolution')
 
@@ -70,14 +62,6 @@ class PeertubeAddon():
         self.play = 0
         self.torrent_name = ''
         self.torrent_f = ''
-
-        # Get the video filter from the settings that will be used when
-        # browsing the videos. The value from the settings is converted into
-        # one of the expected values by the REST APIs ("local" or "all-local")
-        if 'all-local' in get_setting('video_filter'):
-            self.video_filter = 'all-local'
-        else:
-            self.video_filter = 'local'
 
         # Check whether libtorrent could be imported by the service. The value
         # of the associated property is retrieved only once and stored in an
@@ -87,51 +71,12 @@ class PeertubeAddon():
         self.libtorrent_imported = \
             get_property('libtorrent_imported') == 'True'
 
-    def debug(self, message):
-        """Log a debug message
-
-        :param str message: Message to log (will be prefixed with the add-on
-        name)
-        """
-        debug('{0}: {1}'.format(self.addon_name, message))
-
-    def query_peertube(self, req):
-        """
-        Issue a PeerTube API request and return the results
-        :param req: str
-        :result data: dict
-        """
-
-        # Send the PeerTube REST API request
-        self.debug('Issuing request {0}'.format(req))
-        response = requests.get(url=req)
-        data = response.json()
-
-        # Use Request.raise_for_status() to raise an exception if the HTTP
-        # request returned an unsuccessful status code.
-        try:
-            response.raise_for_status()
-        except requests.HTTPError as e:
-            notif_error(title='Communication error',
-                        message='Error when sending request {}'.format(req))
-            # If the JSON contains an 'error' key, print it
-            error_details = data.get('error')
-            if error_details is not None:
-                self.debug('Error => "{}"'.format(data['error']))
-            raise e
-
-        # Try to get the number of elements in the response
-        results_found = data.get('total', None)
-        # If the information is available in the response, use it
-        if results_found is not None:
-            # Return when no results are found
-            if results_found == 0:
-                self.debug('No result found')
-                return None
-            else:
-                self.debug('Found {0} results'.format(results_found))
-
-        return data
+        # Create a PeerTube object to send requests: settings which are used
+        # only by this object are directly retrieved from the settings
+        self.peertube = PeerTube(instance=self.selected_inst,
+                                 count=self.items_per_page,
+                                 sort=get_setting('video_sort_method'),
+                                 video_filter=get_setting('video_filter'))
 
     def create_list(self, lst, data_type, start):
         """
@@ -227,9 +172,7 @@ class PeertubeAddon():
                 instance = 'https://{}'.format(instance)
 
         # Retrieve the information about the video
-        metadata = self.query_peertube(urljoin(instance,
-                                               '/api/v1/videos/{}'
-                                               .format(video_id)))
+        metadata = self.peertube.get_video(video_id)
 
         # Depending if WebTorrent is enabled or not, the files corresponding to
         # different resolutions available for a video may be stored in "files"
@@ -240,8 +183,7 @@ class PeertubeAddon():
         else:
             files = metadata['streamingPlaylists'][0]['files']
 
-        self.debug(
-            'Looking for the best resolution matching the user preferences')
+        debug('Looking for the best resolution matching the user preferences')
 
         current_res = 0
         higher_res = -1
@@ -253,97 +195,32 @@ class PeertubeAddon():
             if res == self.preferred_resolution:
                 # Stop directly when we find the exact same resolution as the
                 # user's preferred one
-                self.debug('Found video with preferred resolution')
+                debug('Found video with preferred resolution')
                 torrent_url = f['torrentUrl']
                 break
             elif res < self.preferred_resolution and res > current_res:
                 # Otherwise, try to find the best one just below the user's
                 # preferred one
-                self.debug('Found video with good lower resolution'
-                           '({0})'.format(f['resolution']['label']))
+                debug('Found video with good lower resolution ({0})'
+                      .format(f['resolution']['label']))
                 torrent_url = f['torrentUrl']
                 current_res = res
             elif (res > self.preferred_resolution
                     and (res < higher_res or higher_res == -1)):
                 # In the worst case, we'll take the one just above the user's
                 # preferred one
-                self.debug('Saving video with higher resolution ({0})'
-                           'as a possible alternative'
-                           .format(f['resolution']['label']))
+                debug('Saving video with higher resolution ({0}) as a possible'
+                      ' alternative'.format(f['resolution']['label']))
                 backup_url = f['torrentUrl']
                 higher_res = res
 
         # When we didn't find a resolution equal or lower than the user's
         # preferred one, use the resolution just above the preferred one
         if not torrent_url:
-            self.debug('Using video with higher resolution as alternative')
+            debug('Using video with higher resolution as alternative')
             torrent_url = backup_url
 
         return torrent_url
-
-    def build_video_rest_api_request(self, search, start):
-        """Build the URL of an HTTP request using the PeerTube videos REST API.
-
-        The same function is used for browsing and searching videos.
-
-        :param search: keywords to search
-        :type search: string
-        :param start: offset
-        :type start: int
-        :return: the URL of the request
-        :rtype: str
-
-        Didn't yet find a correct way to do a search with a filter set to
-        local. Then if a search value is given it won't filter on local
-        """
-
-        # Common parameters of the request
-        params = {
-            'count': self.items_per_page,
-            'start': start,
-            'sort': self.sort_method
-        }
-
-        # Depending on the type of request (search or list videos), add
-        # specific parameters and define the API to use
-        if search is None:
-            # Video API does not provide "search" but provides "filter" so add
-            # it to the parameters
-            params.update({'filter': self.video_filter})
-            api_url = '/api/v1/videos'
-        else:
-            # Search API does not provide "filter" but provides "search" so add
-            # it to the parameters
-            params.update({'search': search})
-            api_url = '/api/v1/search/videos'
-
-        # Build the full URL of the request (instance + API + parameters)
-        req = '{0}?{1}'.format(urljoin(self.selected_inst, api_url),
-                               urlencode(params))
-
-        return req
-
-    def build_browse_instances_rest_api_request(self, start):
-        """Build the URL of an HTTP request using the PeerTube REST API to
-        browse the PeerTube instances.
-
-        :param start: offset
-        :type start: int
-        :return: the URL of the request
-        :rtype: str
-        """
-
-        # Create the parameters of the request
-        params = {
-            'count': self.items_per_page,
-            'start': start
-        }
-
-        # Join the base URL with the REST API and the parameters
-        req = 'https://instances.joinpeertube.org/api/v1/instances?{0}'\
-            .format(urlencode(params))
-
-        return req
 
     def search_videos(self, start):
         """
@@ -353,20 +230,17 @@ class PeertubeAddon():
         :param start: string
         """
 
-        # Show a 'Search videos' dialog
-        search = xbmcgui.Dialog().input(
+        # Ask the user which keywords must be searched for
+        keywords = xbmcgui.Dialog().input(
             heading='Search videos on {}'.format(self.selected_inst),
             type=xbmcgui.INPUT_ALPHANUM)
 
         # Go back to main menu when user cancels
-        if not search:
+        if not keywords:
             return
 
-        # Create the PeerTube REST API request for searching videos
-        req = self.build_video_rest_api_request(search, start)
-
         # Send the query
-        results = self.query_peertube(req)
+        results = self.peertube.search_videos(keywords, start)
 
         # Exit directly when no result is found
         if not results:
@@ -389,11 +263,8 @@ class PeertubeAddon():
         :param start: string
         """
 
-        # Create the PeerTube REST API request for listing videos
-        req = self.build_video_rest_api_request(None, start)
-
         # Send the query
-        results = self.query_peertube(req)
+        results = self.peertube.list_videos(start)
 
         # Create array of xmbcgui.ListItem's
         listing = self.create_list(results, 'videos', start)
@@ -408,11 +279,8 @@ class PeertubeAddon():
         :param start: str
         """
 
-        # Create the PeerTube REST API request for browsing PeerTube instances
-        req = self.build_browse_instances_rest_api_request(start)
-
         # Send the query
-        results = self.query_peertube(req)
+        results = list_instances(start)
 
         # Create array of xmbcgui.ListItem's
         listing = self.create_list(results, 'instances', start)
@@ -429,8 +297,7 @@ class PeertubeAddon():
         :param data: dict
         """
 
-        self.debug(
-            'Received metadata_downloaded signal, will start playing media')
+        debug('Received metadata_downloaded signal, will start playing media')
         self.play = 1
         self.torrent_f = data['file']
 
@@ -448,7 +315,7 @@ class PeertubeAddon():
                                 ' at {}'.format(self.HELP_URL))
             return
 
-        self.debug('Starting torrent download ({0})'.format(torrent_url))
+        debug('Starting torrent download ({0})'.format(torrent_url))
 
         # Start a downloader thread
         AddonSignals.sendSignal('start_download', {'url': torrent_url})
@@ -473,7 +340,7 @@ class PeertubeAddon():
             xbmc.sleep(3000)
 
         # Pass the item to the Kodi player for actual playback.
-        self.debug('Starting video playback ({0})'.format(torrent_url))
+        debug('Starting video playback ({0})'.format(torrent_url))
         play_item = xbmcgui.ListItem(path=self.torrent_f)
         xbmcplugin.setResolvedUrl(self.plugin_id, True, listitem=play_item)
 
@@ -495,7 +362,7 @@ class PeertubeAddon():
         message = '{0} is now the selected instance'.format(self.selected_inst)
         notif_info(title='Current instance changed',
                    message=message)
-        self.debug(message)
+        debug(message)
 
     def build_kodi_url(self, parameters):
         """Build a Kodi URL based on the parameters.

@@ -24,6 +24,57 @@ The workflow is the following:
 Note: more information about the pipeline is available in the
 [CI file](.gitlab-ci.yml).
 
+## Design
+
+The add-on is based on the following python modules:
+
+| Name | Description |
+| ------ | ------ |
+| main.py | Entry point of the add-on. |
+| service.py | Service responsible for downloading torrent files in the background. |
+| resources/lib/addon.py | It handles the routing and the interaction between the other modules. |
+| resources/lib/peertube.py | Responsible for interacting with PeerTube. |
+| resources/lib/kodi_utils.py | Provides utility functions to interact easily with Kodi. |
+
+### main.py
+
+The file `peertube.py` is currently being redesigned into the `main` module.
+
+This module must be as short as possible (15 effective lines of code maximum)
+to comply with Kodi add-on development best practices (checked by the
+[Kodi add-on checker](https://github.com/xbmc/addon-check)).
+
+### service.py
+
+This module is being redesigned currently.
+
+This module must be as short as possible (15 effective lines of code maximum)
+to comply with Kodi add-on development best practices (checked by the
+[Kodi add-on checker](https://github.com/xbmc/addon-check)).
+
+### addon.py
+
+This module does not exist yet.
+
+### peertube.py
+
+This file contains:
+* the class PeerTube which provides simple method to send REST APIs to a
+  PeerTube instance
+* the function `list_instances` which lists the PeerTube instances from
+  joinpeertube.org. The URL of the API used by this function and the structure
+  of the response in case of errors is different than the other PeerTube APIs
+  (which are sent to a specific instance) so it made sense to have it as a
+  dedicated function. If more instance-related API are used in the future, a
+  class could be created.
+
+### kodi_utils.py
+
+This module only contains functions (no classes) as no common data between them
+was identified.
+
+The functions must be sorted alphabetically to make the maintenance easier.
+
 ## Coding style
 
 The code is still based on the design of the alpha version so the coding style
