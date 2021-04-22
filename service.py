@@ -14,7 +14,7 @@ from threading import Thread
 import xbmc # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
 import xbmcvfs # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
 
-from resources.lib.kodi_utils import debug, set_property
+from resources.lib.kodi_utils import kodi
 
 class PeertubeDownloader(Thread):
     """
@@ -39,7 +39,7 @@ class PeertubeDownloader(Thread):
         :param str message: Message to log (will be prefixed with the name of
         the class)
         """
-        debug("PeertubeDownloader: {}".format(message))
+        kodi.debug(message=message, prefix="PeertubeDownloader")
 
     def run(self):
         """
@@ -97,7 +97,7 @@ class PeertubeService():
         :param str message: Message to log (will be prefixed with the name of
         the class)
         """
-        debug("PeertubeService: {}".format(message))
+        kodi.debug(message=message, prefix="PeertubeService")
 
     def download_torrent(self, data):
         """
@@ -122,7 +122,7 @@ class PeertubeService():
 
         # Launch the download_torrent callback function when the
         # "start_download" signal is received
-        AddonSignals.registerSlot("plugin.video.peertube",
+        AddonSignals.registerSlot(kodi.addon_id,
                                   "start_download",
                                   self.download_torrent)
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
     # Save whether libtorrent could be imported as a window property so that
     # this information can be retrieved by the add-on
-    set_property("libtorrent_imported", str(LIBTORRENT_IMPORTED))
+    kodi.set_property("libtorrent_imported", str(LIBTORRENT_IMPORTED))
 
     # Start the service
     service.run()

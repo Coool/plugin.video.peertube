@@ -11,7 +11,7 @@
 import requests
 from requests.compat import urljoin
 
-from resources.lib.kodi_utils import debug, get_setting, notif_error
+from resources.lib.kodi_utils import kodi
 
 
 class PeerTube:
@@ -23,9 +23,9 @@ class PeerTube:
         :param str instance: URL of the PeerTube instance
         :param str sort: sort method to use when listing items
         :param int count: number of items to display
-        :param str sort: filter to apply when listing/searching videos
+        :param str video_filter: filter to apply when listing/searching videos
         """
-        self.instance = instance
+        self.set_instance(instance)
 
         self.list_settings = {
             "sort": sort,
@@ -39,7 +39,7 @@ class PeerTube:
         else:
             self.filter = "local"
 
-    def _request(self, method, url, params=None, data=None):
+    def _request(self, method, url, params=None, data=None, instance=None):
         """Call a REST API on the instance
 
         :param str method: REST API method (get, post, put, delete, etc.)
@@ -47,12 +47,22 @@ class PeerTube:
                         instance
         :param dict params: dict of the parameters to send in the request
         :param dict data: dict of the data to send with the request
+        :param str instance: URL of the instance hosting the video. The
+        configured instance will be used if empty.
         :return: the response as JSON data
         :rtype: dict
         """
+        # If no instance was provided, use the one from the settings (which was
+        # used when instantianting this object)
+        if instance is None:
+            instance = self.instance
+        else:
+            # If an instance was provided ensure the URL is prefixed with HTTPS
+            if not instance.startswith("https://"):
+                instance = "https://{}".format(instance)
 
         # Build the URL of the REST API
-        api_url = urljoin("{}/api/v1/".format(self.instance), url)
+        api_url = urljoin("{}/api/v1/".format(instance), url)
 
         # Send a request with a time-out of 5 seconds
         response = requests.request(method=method,
@@ -69,19 +79,19 @@ class PeerTube:
             response.raise_for_status()
         except requests.HTTPError as exception:
             # Print in Kodi's log some information about the request
-            debug("Error when sending a {} request to {} with params={} and"
-                  " data={}".format(method, url, params, data))
+            kodi.debug("Error when sending a {} request to {} with params={}"
+                       " and data={}".format(method, url, params, data))
 
             # Report the error to the user with a notification: if the response
             # contains an "error" attribute, use it as error message, otherwise
             # use a default message.
             if "error" in json:
                 message = json["error"]
-                debug(message)
+                kodi.debug(message)
             else:
                 message = ("No details returned by the server. Check the log"
                            " for more information.")
-            notif_error(title="Request error", message=message)
+            kodi.notif_error(title="Request error", message=message)
             raise exception
 
         return json
@@ -107,20 +117,43 @@ class PeerTube:
 
         return params
 
-    def get_video(self, video_id):
-        """Get the information of a video
+    def get_video_urls(self, video_id, instance=None):
+        """Return the URLs of a video
+
+        PeerTube creates 1 URL for each resolution of a video so this method
+        returns a list of URL/resolution pairs.
 
         :param str video_id: ID or UUID of the video
-        :return: the information of the video as returned by the REST API
-        :rtype: dict
+        :param str instance: URL of the instance hosting the video. The
+        configured instance will be used if empty.
+        :return: pair(s) of URL/resolution
+        :rtype: generator
         """
+        # Get the information about the video
+        metadata = self._request(method="GET",
+                                 url="videos/{}".format(video_id),
+                                 instance=instance)
 
-        return self._request(method="GET", url="videos/{}".format(video_id))
+        # Depending if WebTorrent is enabled or not, the files corresponding to
+        # different resolutions available for a video may be stored in "files"
+        # or "streamingPlaylists[].files". Note that "files" will always exist
+        # in the response but may be empty.
+        if len(metadata["files"]) != 0:
+            files = metadata["files"]
+        else:
+            files = metadata["streamingPlaylists"][0]["files"]
+
+        for file in files:
+            yield {
+                "resolution": int(file["resolution"]["id"]),
+                "url": file["torrentUrl"],
+                "is_live": False
+            }
 
     def list_videos(self, start):
         """List the videos in the instance
 
-        :param str start: index of the first video to display
+        :param int start: index of the first video to display
         :return: the list of videos as returned by the REST API
         :rtype: dict
         """
@@ -133,7 +166,7 @@ class PeerTube:
         """Search for videos on the instance and beyond.
 
         :param str keywords: keywords to seach for
-        :param str start: index of the first video to display
+        :param int start: index of the first video to display
         :return: the videos matching the keywords as returned by the REST API
         :rtype: dict
         """
@@ -144,11 +177,27 @@ class PeerTube:
 
         return self._request(method="GET", url="search/videos", params=params)
 
+    def set_instance(self, instance):
+        """Set the URL of the current instance with the right format
+
+        The URL of the instance may not be prefixed with HTTPS, for instance:
+        * in the settings the URL does not use this prefix to allow the user to
+          change it easily
+        * the URL from the list of instances is not prefixed
+        This method is used to ensure the URL is correctly prefixed with HTTPS
+
+        :param str instance: URL of the instance
+        """
+        if not instance.startswith("https://"):
+                instance = "https://{}".format(instance)
+
+        self.instance = instance
+
 
 def list_instances(start):
     """List all the peertube instances from joinpeertube.org
 
-    :param str start: index of the first instance to display
+    :param int start: index of the first instance to display
     :return: the list of instances as returned by the REST API
     :rtype: dict
     """
@@ -156,7 +205,7 @@ def list_instances(start):
     api_url = "https://instances.joinpeertube.org/api/v1/instances"
     # Build the parameters that will be sent in the request from the settings
     params = {
-        "count": get_setting("items_per_page"),
+        "count": kodi.get_setting("items_per_page"),
         "start": start
     }
 
@@ -171,8 +220,8 @@ def list_instances(start):
         response.raise_for_status()
     except requests.HTTPError as exception:
         # Print in Kodi's log some information about the request
-        debug("Error when getting the list of instances with params={}"
-              .format(params))
+        kodi.debug("Error when getting the list of instances with params={}"
+                   .format(params))
 
         # Report the error to the user with a notification: use the details of
         # the error if it exists in the response, otherwise use a default
@@ -182,11 +231,11 @@ def list_instances(start):
             # name. Then get the second element in the sublist which contains
             # the details of the error.
             message = list(json["errors"].items())[0][1]["msg"]
-            debug(message)
+            kodi.debug(message)
         except KeyError:
             message = ("No details returned by the server. Check the log"
                         " for more information.")
-        notif_error(title="Request error", message=message)
+        kodi.notif_error(title="Request error", message=message)
         raise exception
 
     return json
