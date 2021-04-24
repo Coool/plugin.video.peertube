@@ -291,7 +291,7 @@ class PeerTubeAddon():
                 url=kodi.build_kodi_url({"action": "search_videos","start": 0})
             ),
             kodi.generate_item_info(
-                name="Browse videos on the selected instance",
+                name="Select another instance",
                 url=kodi.build_kodi_url({
                     "action": "browse_instances",
                     "start": 0
