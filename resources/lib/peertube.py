@@ -121,7 +121,8 @@ class PeerTube:
         """Return the URLs of a video
 
         PeerTube creates 1 URL for each resolution of a video so this method
-        returns a list of URL/resolution pairs.
+        returns a list of URL/resolution pairs. In the case of a live video,
+        only an URL will be returned (no resolution).
 
         :param str video_id: ID or UUID of the video
         :param str instance: URL of the instance hosting the video. The
@@ -134,21 +135,28 @@ class PeerTube:
                                  url="videos/{}".format(video_id),
                                  instance=instance)
 
-        # Depending if WebTorrent is enabled or not, the files corresponding to
-        # different resolutions available for a video may be stored in "files"
-        # or "streamingPlaylists[].files". Note that "files" will always exist
-        # in the response but may be empty.
-        if len(metadata["files"]) != 0:
-            files = metadata["files"]
-        else:
-            files = metadata["streamingPlaylists"][0]["files"]
-
-        for file in files:
+        if metadata["isLive"]:
+            # When the video is a live, yield the unique playlist URL (there is
+            # no resolution in this case)
             yield {
-                "resolution": int(file["resolution"]["id"]),
-                "url": file["torrentUrl"],
-                "is_live": False
+                "url": metadata['streamingPlaylists'][0]['playlistUrl'],
             }
+        else:
+            # For non live videos, the files corresponding to different
+            # resolutions available for a video may be stored in "files" or
+            # "streamingPlaylists[].files" depending if WebTorrent is enabled
+            # or not. Note that "files" will always exist in the response but
+            # may be empty so len() must be used.
+            if len(metadata["files"]) != 0:
+                files = metadata["files"]
+            else:
+                files = metadata["streamingPlaylists"][0]["files"]
+
+            for file in files:
+                yield {
+                    "resolution": int(file["resolution"]["id"]),
+                    "url": file["torrentUrl"],
+                }
 
     def list_videos(self, start):
         """List the videos in the instance

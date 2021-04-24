@@ -161,6 +161,14 @@ class PeerTubeAddon():
                                            data["thumbnailPath"]),
                 aired=data["publishedAt"]
             )
+            # Note: the type of video (live or not) is available in "response"
+            # but this information is ignored here so that the "play_video"
+            # action is the same whatever the type of the video. The goal is to
+            # allow external users of the API to play a video only with its ID
+            # without knowing its type.
+            # The information about the type of the video will anyway be
+            # available in the response used to get the URL of a video so this
+            # solution does not impact the performance.
 
             yield video_info
         else:
@@ -202,13 +210,18 @@ class PeerTubeAddon():
             return next_page_item
 
     def _get_video_url(self, video_id, instance=None):
-        """Find the URL of the video with the best possible quality matching
+        """Return the URL of a video and its type (live or not)
+
+        Find the URL of the video with the best possible quality matching
         user's preferences.
+        The information whether the video is live or not will also be returned.
 
         :param str video_id: ID of the torrent linked with the video
         :param str instance: PeerTube instance hosting the video (optional)
-        :return: URL of the video containing the resolution
-        :rtype: str
+        :return: a boolean indicating if the video is a live stream and the URL
+        of the video (containing the resolution for non-live videos) as a
+        string
+        :rtype: tuple
         """
         # Retrieve the information about the video including the different
         # resolutions available
@@ -218,16 +231,24 @@ class PeerTubeAddon():
         current_resolution = 0
         higher_resolution = -1
         url = ""
+        is_live = False
         for video in video_files:
             # Get the resolution
-            resolution = video["resolution"]
+            resolution = video.get("resolution")
+            if resolution is None:
+                # If there is no resolution in the dict, then the video is a
+                # live stream: no need to find the best resolution as there is
+                # only 1 URL in this case
+                url = video["url"]
+                is_live = True
+                return (is_live, url)
             if resolution == self.preferred_resolution:
                 # Stop directly when we find the exact same resolution as the
                 # user's preferred one
                 kodi.debug("Found video with preferred resolution ({})"
                            .format(self.preferred_resolution))
                 url = video["url"]
-                break
+                return (is_live, url)
             elif (resolution < self.preferred_resolution
                     and resolution > current_resolution):
                 # Otherwise, try to find the best one just below the user's
@@ -255,7 +276,7 @@ class PeerTubeAddon():
                         .format(higher_resolution))
             url = backup_url
 
-        return url
+        return (is_live, url)
 
     def _home_page(self):
         """Display the items of the home page of the add-on"""
@@ -417,12 +438,18 @@ class PeerTubeAddon():
             elif action == "play_video":
                 # This action comes with the id of the video to play as
                 # parameter. The instance may also be in the parameters. Use
-                # these parameters to retrieve the complete URL (containing the
-                # resolution).
-                url = self._get_video_url(instance=params.get("instance"),
-                                          video_id=params.get("id"))
-                # Play the video using the URL
-                self._play_video(url)
+                # these parameters to retrieve the complete URL of the video
+                # (containing the resolution) and the type of the video (live
+                # or not).
+                is_live, url = self._get_video_url(
+                    instance=params.get("instance"),video_id=params.get("id"))
+
+                # Play the video (Kodi can play live videos (.m3u8) out of the
+                # box whereas torrents must first be downloaded)
+                if is_live:
+                    kodi.play(url)
+                else:
+                    self._play_video(url)
             elif action == "select_instance":
                 # Set the selected instance as the preferred instance
                 self._select_instance(params["url"])
@@ -436,6 +463,6 @@ class PeerTubeAddon():
                 kodi.open_dialog(
                     title="Error: libtorrent could not be imported",
                     message="You can still browse and search videos but you"
-                            " will not be able to play them.\n"
-                            "Please follow the instructions at {}"
+                            " will not be able to play them (except live"
+                            " videos).\nPlease follow the instructions at {}"
                             .format(self.HELP_URL))
