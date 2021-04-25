@@ -392,7 +392,7 @@ class PeerTubeAddon():
         kodi.debug(
             "Received metadata_downloaded signal, will start playing media")
         self.play = True
-        self.torrent_file = data["file"]
+        self.torrent_file = data["file"].encode("utf-8")
 
     def _select_instance(self, instance):
         """
