@@ -59,7 +59,7 @@ It contains 2 classes:
   received from `addon.py`
 * PeertubeDownloader: downloads torrent in an independent thread
 
-This module must be as short as possible (15 effective lines of code maximum)
+This module should be as short as possible (15 effective lines of code maximum)
 to comply with Kodi add-on development best practices (checked by the
 [Kodi add-on checker](https://github.com/xbmc/addon-check)).
 
@@ -141,3 +141,18 @@ These steps should be followed only by maintainers.
 4. A new pipeline with the job `create-release` will be created: run the job
    manually since it should be `blocked` (maintainers only)
 5. The new release will be available on the releases page.
+
+## Translation
+
+To translate the add-on you may:
+* edit one of the `strings.po` file existing in the subfolders of
+  `resources/language`
+* create a new `strings.po` for your language
+
+A CI job called `translation` is available in each merge request which contains
+changes in strings.po files. It checks that the reference strings in the
+translation files are the same as in the reference file
+([resources/language/resource.language.en_gb/strings.po](./resources/language/resource.language.en_gb/strings.po)).
+
+More information on the translation system used by Kodi and its add-ons is
+available [here](https://kodi.wiki/view/Language_support).

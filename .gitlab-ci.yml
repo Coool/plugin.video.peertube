@@ -45,6 +45,27 @@ quality:
     expire_in: 1 week
     when: always
 
+# Translation job: check that all the string.po files use the same strings as
+# the reference file
+translation:
+  stage: validation
+  # Do not get any artifacts from previous jobs
+  dependencies: []
+  rules:
+    # Run this job only on merge requests containing changes in strings.po
+    # files and only as "manual"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - resources/language/*/strings.po
+      when: manual
+  before_script:
+  - *apt_get_update
+  - apt-get install --yes gettext > /dev/null
+  # We cannot use a simple "find ... -exec msgcmp {} strings.po" because it
+  # would always return 0 as exit code
+  script:
+    - files=$(find . -name strings.po -not -path './resources/language/resource.language.en_gb/*') && for file in $files; do echo -e "\n\033[94mChecking translation file $file\033[0m"; msgcmp $file ./resources/language/resource.language.en_gb/strings.po; done
+
 # Pre-release job: will be available in all the merge requests with release
 # branches in order to verify the release can be actually created. The
 # verification is done by running the release script in dry run mode.
