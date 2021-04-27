@@ -49,9 +49,7 @@ class PeerTubeAddon():
         # only by this object are directly retrieved from the settings
         self.peertube = PeerTube(
             instance=kodi.get_setting("preferred_instance"),
-            count=self.items_per_page,
-            sort=kodi.get_setting("video_sort_method"),
-            video_filter=kodi.get_setting("video_filter"))
+            count=self.items_per_page)
 
     def _browse_videos(self, start):
         """Display the list of all the videos published on a PeerTube instance

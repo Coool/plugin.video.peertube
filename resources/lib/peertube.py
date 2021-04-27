@@ -17,27 +17,23 @@ from resources.lib.kodi_utils import kodi
 class PeerTube:
     """A class to interact easily with PeerTube instances using REST APIs"""
 
-    def __init__(self, instance, sort, count, video_filter):
-        """Constructor
+    def __init__(self, instance, count):
+        """Initialize the parameters that will be used in the requests
+
+        Some values are retrieved directly from the settings, others come as
+        arguments because they are used somewhere else in the add-on.
 
         :param str instance: URL of the PeerTube instance
-        :param str sort: sort method to use when listing items
         :param int count: number of items to display
-        :param str video_filter: filter to apply when listing/searching videos
         """
         self.set_instance(instance)
 
         self.list_settings = {
-            "sort": sort,
+            "sort": self._get_sort_method(),
             "count": count
         }
 
-        # The value "video_filter" is directly retrieved from the settings so
-        # it must be converted into one of the expected values by the REST APIs
-        if "all-local" in video_filter:
-            self.filter = "all-local"
-        else:
-            self.filter = "local"
+        self.filter = self._get_video_filter()
 
     def _request(self, method, url, params=None, data=None, instance=None):
         """Call a REST API on the instance
@@ -116,6 +112,32 @@ class PeerTube:
             params[param] = kwargs[param]
 
         return params
+
+    def _get_video_filter(self):
+        """Get the video filter from the settings
+
+        The value of the associated setting is localized so a list is used to
+        get the value expected by the API based on the index of the value used.
+
+        :return: value of the video_filter setting
+        :rtype: str
+        """
+
+        filters = ["local", "all-local"]
+        return filters[int(kodi.get_setting("video_filter"))]
+
+    def _get_sort_method(self):
+        """Get the sort method from the settings
+
+        The value of the associated setting is localized so a list is used to
+        get the value expected by the API based on the index of the value used.
+
+        :return: value of the video_sort_method setting
+        :rtype: str
+        """
+
+        sort_methods = ["likes", "views"]
+        return sort_methods[int(kodi.get_setting("video_sort_method"))]
 
     def get_video_urls(self, video_id, instance=None):
         """Return the URLs of a video

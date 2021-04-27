@@ -21,11 +21,11 @@ msgid "Preferred instance"
 msgstr ""
 
 msgctxt "#30001"
-msgid "Number of videos to show per page"
+msgid "Number of items to show per page"
 msgstr ""
 
 msgctxt "#30002"
-msgid "Sort method to be used when listing videos"
+msgid "Sort videos by"
 msgstr ""
 
 msgctxt "#30003"
@@ -37,5 +37,33 @@ msgstr ""
 #msgstr ""
 
 msgctxt "#30005"
-msgid "Filter local or all videos (for browsing only)"
+msgid "List only videos with scope"
+msgstr ""
+
+msgctxt "#30006"
+msgid "General"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Browsing/Searching"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Video playback"
+msgstr ""
+
+msgctxt "#30009"
+msgid "local"
+msgstr ""
+
+msgctxt "#30010"
+msgid "all-local (admins only)"
+msgstr ""
+
+msgctxt "#30011"
+msgid "likes"
+msgstr ""
+
+msgctxt "#30012"
+msgid "views"
 msgstr ""

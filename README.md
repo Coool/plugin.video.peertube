@@ -24,15 +24,19 @@ If you want to contribute, please start with the
 # User settings
 
 * Preferred PeerTube instance 
-* Preferred video resolution
-* Number of items to display per page
-* Value used to sort items when listing/searching videos:
-  * `views`: sort by number of views (ascending only)
-  * `likes`: sort by number of likes (ascending only)
-* Select the filter to use when browsing the videos on an instance:
-  * local will only display the videos which are local to the selected instance
-  * all-local will only display the videos which are local to the selected
-    instance plus the private and unlisted videos **(requires admin privileges)**
+* Browsing/Searching:
+  * Number of items to show per page (max 100)
+  * Field used to sort items when listing/searching videos:
+    * `views`: sort by number of views (ascending only)
+    * `likes`: sort by number of likes (ascending only)
+  * Select the filter to use when browsing and searching the videos on an instance:
+    * `local` will only display the videos which are local to the selected
+      instance
+    * `all-local` will only display the videos which are local to the selected
+      instance **plus** the private and unlisted videos
+      **(requires admin privileges)**
+* Video playback:
+  * Preferred video resolution
 
 # API
 
