@@ -323,7 +323,8 @@ class PeerTubeAddon():
         if not results:
             kodi.notif_warning(
                 title="No videos found",
-                message="No videos found matching the keywords.")
+                message="No videos found matching the keywords '{}'"
+                        .format(keywords))
             return
 
         # Extract the information of each video from the API response

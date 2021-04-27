@@ -198,14 +198,22 @@ class PeerTube:
         :param str keywords: keywords to seach for
         :param int start: index of the first video to display
         :return: the videos matching the keywords as returned by the REST API
+        or None if there are no matches returned
         :rtype: dict
         """
-        # Build the parameters that will be send in the request
+        # Build the parameters that will be sent in the request
         params = self._build_params(search=keywords,
                                     filter=self.filter,
                                     start=start)
 
-        return self._request(method="GET", url="search/videos", params=params)
+        response = self._request(method="GET",
+                                 url="search/videos",
+                                 params=params)
+
+        if response["total"] == 0:
+            return None
+        else:
+            return response
 
     def set_instance(self, instance):
         """Set the URL of the current instance with the right format
