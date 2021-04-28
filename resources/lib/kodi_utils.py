@@ -7,6 +7,7 @@
     SPDX-License-Identifier: GPL-3.0-only
     See LICENSE.txt for more information.
 """
+import os
 try:
     # Python 3.x
     from urllib.parse import parse_qsl
@@ -29,6 +30,8 @@ class KodiUtils:
         """Initialize the object with information about the add-on"""
         self.addon_name = xbmcaddon.Addon().getAddonInfo("name")
         self.addon_id = xbmcaddon.Addon().getAddonInfo("id")
+        self.addon_media = os.path.join(xbmcaddon.Addon().getAddonInfo("path"),
+                                        "resources", "media")
 
         # Prepare other attributes that will be initialized with sys.argv
         self.addon_url = ""
@@ -165,9 +168,10 @@ class KodiUtils:
         :param str title: Title of the notification
         :param str message: Message of the notification
         """
-        xbmcgui.Dialog().notification(heading=title,
-                                      message=message,
-                                      icon=xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification(
+            heading=title,
+            message=message,
+            icon=os.path.join(self.addon_media, "icon_error.png"))
 
     def notif_info(self, title, message):
         """Display a notification with the info icon
@@ -175,9 +179,10 @@ class KodiUtils:
         :param str title: Title of the notification
         :param str message: Message of the notification
         """
-        xbmcgui.Dialog().notification(heading=title,
-                                      message=message,
-                                      icon=xbmcgui.NOTIFICATION_INFO)
+        xbmcgui.Dialog().notification(
+            heading=title,
+            message=message,
+            icon=os.path.join(self.addon_media, "icon_info.png"))
 
     def notif_warning(self, title, message):
         """Display a notification with the warning icon
@@ -185,9 +190,10 @@ class KodiUtils:
         :param str title: Title of the notification
         :param str message: Message of the notification
         """
-        xbmcgui.Dialog().notification(heading=title,
-                                      message=message,
-                                      icon=xbmcgui.NOTIFICATION_WARNING)
+        xbmcgui.Dialog().notification(
+            heading=title,
+            message=message,
+            icon=os.path.join(self.addon_media, "icon_warning.png"))
 
     def open_dialog(self, title, message):
         """Open a dialog box with an "OK" button
