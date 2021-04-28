@@ -23,7 +23,10 @@ If you want to contribute, please start with the
 
 # User settings
 
-* Preferred PeerTube instance 
+* Preferred PeerTube instance
+* Display (or not) a notification when the service starts: the notification
+  lets the user know that the videos can be played which may be useful on slow
+  devices (when the service takes some time to start)
 * Browsing/Searching:
   * Number of items to show per page (max 100)
   * Field used to sort items when listing/searching videos:

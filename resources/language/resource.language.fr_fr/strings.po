@@ -67,3 +67,7 @@ msgstr "nombre de j'aime"
 msgctxt "#30012"
 msgid "views"
 msgstr "nombre de vues"
+
+msgctxt "#30013"
+msgid "Display a notification when the service starts"
+msgstr "Afficher une notification au démarrage du service"

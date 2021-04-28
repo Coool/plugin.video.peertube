@@ -67,3 +67,7 @@ msgstr ""
 msgctxt "#30012"
 msgid "views"
 msgstr ""
+
+msgctxt "#30013"
+msgid "Display a notification when the service starts"
+msgstr ""

@@ -2,6 +2,7 @@
 <settings>
     <category label="30006">
         <setting id="preferred_instance" type="text" default="framatube.org" label="30000"/>
+        <setting id="service_start_notif" label="30013" type="bool" default="true"/>
         <setting label="30007" type="lsep"/>
         <setting id="items_per_page" type="select" values="10|20|50|100" default="20" label="30001"/>
         <setting id="video_sort_method" type="select" lvalues="30011|30012" default=1 label="30002"/>
