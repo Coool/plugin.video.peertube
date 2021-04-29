@@ -132,6 +132,16 @@ class KodiUtils:
             }
         }
 
+    def get_property(self, name):
+        """Retrieve the value of a window property related to the add-on
+
+        :param str name: Name of the property which value will be retrieved (the
+        actual name of the property is prefixed with "peertube_")
+        :return: Value of the window property
+        :rtype: str
+        """
+        return xbmcgui.Window(10000).getProperty("peertube_{}".format(name))
+
     def get_run_parameters(self):
         """Return the parameter the add-on was called with
 
@@ -143,16 +153,6 @@ class KodiUtils:
         # The first character ("?") is skipped
         return dict(parse_qsl(self.addon_parameters[1:]))
 
-    def get_property(self, name):
-        """Retrieve the value of a window property related to the add-on
-
-        :param str name: Name of the property which value will be retrieved (the
-        actual name of the property is prefixed with "peertube_")
-        :return: Value of the window property
-        :rtype: str
-        """
-        return xbmcgui.Window(10000).getProperty("peertube_{}".format(name))
-
     def get_setting(self, setting_name):
         """Retrieve the value of a setting
 
@@ -161,6 +161,15 @@ class KodiUtils:
         :rtype: str
         """
         return xbmcaddon.Addon().getSetting(setting_name)
+
+    def get_string(self, string_id):
+        """Retrieve a localized string
+
+        :param int string_id: ID of the string in strings.po
+        :return: the localized value of the string
+        :rtype: str
+        """
+        return xbmcaddon.Addon().getLocalizedString(string_id)
 
     def notif_error(self, title, message):
         """Display a notification with the error icon

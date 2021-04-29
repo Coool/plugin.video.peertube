@@ -81,13 +81,17 @@ class PeerTube:
             # Report the error to the user with a notification: if the response
             # contains an "error" attribute, use it as error message, otherwise
             # use a default message.
+            # Note: in case the error attribute is used, the message will be in
+            # English whatever the language configured by the user. It's better
+            # to share the information with the user (even if it's not in its
+            # language) rather than always redirecting to the Kodi's log.
             if "error" in json:
                 message = json["error"]
                 kodi.debug(message)
             else:
-                message = ("No details returned by the server. Check the log"
-                           " for more information.")
-            kodi.notif_error(title="Request error", message=message)
+                message = kodi.get_string(30403)
+
+            kodi.notif_error(title=kodi.get_string(30402), message=message)
             raise exception
 
         return json
@@ -264,6 +268,10 @@ def list_instances(start):
         # Report the error to the user with a notification: use the details of
         # the error if it exists in the response, otherwise use a default
         # message.
+        # Note: in case the error is reused from the response, the message will
+        # be in English whatever the language configured by the user. It's
+        # better to share the information with the user (even if it's not in
+        # its language) rather than always redirecting to the Kodi's log.
         try:
             # Convert the reponse to a list to get the first error whatever its
             # name. Then get the second element in the sublist which contains
@@ -271,9 +279,8 @@ def list_instances(start):
             message = list(json["errors"].items())[0][1]["msg"]
             kodi.debug(message)
         except KeyError:
-            message = ("No details returned by the server. Check the log"
-                        " for more information.")
-        kodi.notif_error(title="Request error", message=message)
+            message = kodi.get_string(30403)
+        kodi.notif_error(title=kodi.get_string(30402), message=message)
         raise exception
 
     return json

@@ -6,7 +6,15 @@ If you want to contribute, please start with the
 [contribution guidelines](contributing.md) and the
 [pending issues](https://framagit.org/StCyr/plugin.video.peertube/-/issues).
 
+---
+
 [[_TOC_]]
+
+# Installation and prerequisites
+
+Please read the
+[wiki](https://framagit.org/StCyr/plugin.video.peertube/-/wikis/home)
+for more information.
 
 # Features
 
@@ -20,6 +28,19 @@ If you want to contribute, please start with the
   to your preference.  
   If not available, it will play the higher resolution that is the closest from
   your preference.
+
+The following languages are available: English and French.  
+If you want to help translating the add-on in your language, check
+[here](contributing.md#translation).
+
+# Limitations
+
+* This add-on doesn't support Webtorrent yet. So, it cannot download/share
+  from/to regular PeerTube clients.
+* The add-on doesn't delete the downloaded files at the moment so it may fill
+  up your disk. You may delete manually the downloaded files in the folder
+  `<kodi_home>/temp/plugin.video.peertube/` (more information about
+  `<kodi_home>` [here](https://kodi.wiki/view/Kodi_data_folder#Location)).
 
 # User settings
 
@@ -57,18 +78,3 @@ For instance to play the video behind the URL
 the add-on with:
 
 `plugin://plugin.video.peertube/?action=play_video&instance=framatube.org&id=9c9de5e8-0a1e-484a-b099-e80766180a6d`
-
-# Limitations
-
-* This add-on doesn't support Webtorrent yet. So, it cannot download/share
-  from/to regular PeerTube clients.
-* The add-on doesn't delete the downloaded files at the moment so it may fill
-  up your disk. You may delete manually the downloaded files in the folder
-  `<kodi_home>/temp/plugin.video.peertube/` (more information on `<kodi_home>`
-  [here](https://kodi.wiki/view/Kodi_data_folder#Location)).
-
-# Installation and prerequisites
-
-Please read the
-[wiki](https://framagit.org/StCyr/plugin.video.peertube/-/wikis/home)
-for more information.

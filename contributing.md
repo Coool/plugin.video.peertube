@@ -149,10 +149,20 @@ To translate the add-on you may:
   `resources/language`
 * create a new `strings.po` for your language
 
+More information about the translation system used by Kodi and its add-ons is
+available [here](https://kodi.wiki/view/Language_support).
+
+While translating please take care to:
+* Keep the `{}`: they will be replaced by variables in the code
+* Keep the punctuation but adapt it to your language's rules (for instance the
+  number of spaces around `:` varies from one language to another)
+* Translate using the meaning of the original string but try to not exceed too
+  much the length of the original string (otherwise it may have a negative
+  impact on the user experience e.g. with overlapping strings)
+* If you hesitate between several translations for a "technical" word, try to
+  use the translation of this word from the Kodi interface
+
 A CI job called `translation` is available in each merge request which contains
 changes in strings.po files. It checks that the reference strings in the
 translation files are the same as in the reference file
 ([resources/language/resource.language.en_gb/strings.po](./resources/language/resource.language.en_gb/strings.po)).
-
-More information on the translation system used by Kodi and its add-ons is
-available [here](https://kodi.wiki/view/Language_support).

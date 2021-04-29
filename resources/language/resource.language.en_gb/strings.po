@@ -14,10 +14,15 @@ msgstr ""
 "Language: en_GB\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-# Settings (from 30000 to 30019)
+# Only IDs from 30000 to 30999 can be used by plugins.
+# (from https://kodi.wiki/view/Language_support#String_ID_range)
+
+# -----------------------------------
+# Settings (from 30000 to 30399)
+# -----------------------------------
 
 msgctxt "#30000"
-msgid "Preferred instance"
+msgid "Instance URL"
 msgstr ""
 
 msgctxt "#30001"
@@ -70,4 +75,92 @@ msgstr ""
 
 msgctxt "#30013"
 msgid "Display a notification when the service starts"
+msgstr ""
+
+# -----------------------------------
+# Other strings (from 30400 to 30999)
+# -----------------------------------
+
+msgctxt "#30400"
+msgid "PeerTube service started"
+msgstr ""
+
+msgctxt "#30401"
+msgid "Torrents can now be downloaded."
+msgstr ""
+
+msgctxt "#30402"
+msgid "Request error"
+msgstr ""
+
+msgctxt "#30403"
+msgid "No details returned by the server. Check the log for more information."
+msgstr ""
+
+msgctxt "#30404"
+msgid "{}\n\n----------\nNumber of local videos: {}\nNumber of users: {}"
+msgstr ""
+
+msgctxt "#30405"
+msgid "Next page"
+msgstr ""
+
+msgctxt "#30406"
+msgid "Browse videos on the selected instance"
+msgstr ""
+
+msgctxt "#30407"
+msgid "Search videos on the selected instance"
+msgstr ""
+
+msgctxt "#30408"
+msgid "Select another instance"
+msgstr ""
+
+msgctxt "#30409"
+msgid "Search videos on {}"
+msgstr ""
+
+msgctxt "#30410"
+msgid "No videos found"
+msgstr ""
+
+msgctxt "#30411"
+msgid "No videos found matching the keywords '{}'"
+msgstr ""
+
+msgctxt "#30412"
+msgid "Error: libtorrent could not be imported"
+msgstr ""
+
+msgctxt "#30413"
+msgid "PeerTube cannot play videos without libtorrent\nPlease follow the instructions at {}"
+msgstr ""
+
+msgctxt "#30414"
+msgid "Download started"
+msgstr ""
+
+msgctxt "#30415"
+msgid "The video will be played soon."
+msgstr ""
+
+msgctxt "#30416"
+msgid "Download timeout"
+msgstr ""
+
+msgctxt "#30417"
+msgid "Timeout while downloading {}"
+msgstr ""
+
+msgctxt "#30418"
+msgid "Instance changed"
+msgstr ""
+
+msgctxt "#30419"
+msgid "{} is now the selected instance"
+msgstr ""
+
+msgctxt "#30420"
+msgid "You can still browse and search videos but you will not be able to play them (except live videos).\nPlease follow the instructions at {}"
 msgstr ""

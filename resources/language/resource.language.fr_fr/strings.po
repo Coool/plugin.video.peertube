@@ -14,11 +14,16 @@ msgstr ""
 "Language: fr_FR\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-# Settings (from 30000 to 30019)
+# Only IDs from 30000 to 30999 can be used by plugins.
+# (from https://kodi.wiki/view/Language_support#String_ID_range)
+
+# -----------------------------------
+# Settings (from 30000 to 30399)
+# -----------------------------------
 
 msgctxt "#30000"
-msgid "Preferred instance"
-msgstr "Instance préférée"
+msgid "Instance URL"
+msgstr "URL de l'instance"
 
 msgctxt "#30001"
 msgid "Number of items to show per page"
@@ -71,3 +76,91 @@ msgstr "nombre de vues"
 msgctxt "#30013"
 msgid "Display a notification when the service starts"
 msgstr "Afficher une notification au démarrage du service"
+
+# -----------------------------------
+# Other strings (from 30400 to 30999)
+# -----------------------------------
+
+msgctxt "#30400"
+msgid "PeerTube service started"
+msgstr "Le service PeerTube a démarré"
+
+msgctxt "#30401"
+msgid "Torrents can now be downloaded."
+msgstr "Les torrents peuvent maintenant être téléchargés."
+
+msgctxt "#30402"
+msgid "Request error"
+msgstr "Erreur de la requête"
+
+msgctxt "#30403"
+msgid "No details returned by the server. Check the log for more information."
+msgstr "Le serveur n'a pas renvoyé de détails. Voir le journal pour plus d'informations."
+
+msgctxt "#30404"
+msgid "{}\n\n----------\nNumber of local videos: {}\nNumber of users: {}"
+msgstr "{}\n\n----------\nNombre de vidéos locales: {}\nNombre d'utilisateurs: {}"
+
+msgctxt "#30405"
+msgid "Next page"
+msgstr "Page suivante"
+
+msgctxt "#30406"
+msgid "Browse videos on the selected instance"
+msgstr "Parcourir les vidéos sur l'instance sélectionnée"
+
+msgctxt "#30407"
+msgid "Search videos on the selected instance"
+msgstr "Rechercher des vidéos sur l'instance sélectionnée"
+
+msgctxt "#30408"
+msgid "Select another instance"
+msgstr "Sélectionner une autre instance"
+
+msgctxt "#30409"
+msgid "Search videos on {}"
+msgstr "Rechercher des vidéos sur {}"
+
+msgctxt "#30410"
+msgid "No videos found"
+msgstr "Aucune vidéo trouvée"
+
+msgctxt "#30411"
+msgid "No videos found matching the keywords '{}'"
+msgstr "Aucune vidéo ne correspond aux mots-clés '{}'"
+
+msgctxt "#30412"
+msgid "Error: libtorrent could not be imported"
+msgstr "Erreur: libtorrent n'a pas pu être importé"
+
+msgctxt "#30413"
+msgid "PeerTube cannot play videos without libtorrent\nPlease follow the instructions at {}"
+msgstr "PeerTube ne peut pas lire de vidéos sans libtorrent.\nMerci de suivre les instructions depuis {}"
+
+msgctxt "#30414"
+msgid "Download started"
+msgstr "Démarrage du téléchargement"
+
+msgctxt "#30415"
+msgid "The video will be played soon."
+msgstr "La video va être bientôt lue."
+
+msgctxt "#30416"
+msgid "Download timeout"
+msgstr "Délai d'attente dépassé"
+
+msgctxt "#30417"
+msgid "Timeout while downloading {}"
+msgstr "Délai d'attente dépassé lors du téléchargement de {}"
+
+msgctxt "#30418"
+msgid "Instance changed"
+msgstr "Instance modifiée"
+
+msgctxt "#30419"
+msgid "{} is now the selected instance"
+msgstr "{} est maintenant l'instance sélectionnée"
+
+msgctxt "#30420"
+msgid "You can still browse and search videos but you will not be able to play them (except live videos).\nPlease follow the instructions at {}"
+msgstr "Vous pouvez parcourir ou chercher des vidéos mais vous ne pourrez pas les lire (sauf les live).\nMerci de suivre les instructions depuis {}"

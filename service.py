@@ -129,8 +129,8 @@ class PeertubeService():
         # Monitor Kodi's shutdown signal
         self.debug("Service started, waiting for signals")
         if kodi.get_setting("service_start_notif") == "true":
-            kodi.notif_info(title="PeerTube service started",
-                            message="Torrents can now be downloaded.")
+            kodi.notif_info(title=kodi.get_string(30400),
+                            message=kodi.get_string(30401))
         monitor = xbmc.Monitor()
         while not monitor.abortRequested():
             if monitor.waitForAbort(1):

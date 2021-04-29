@@ -97,13 +97,11 @@ class PeerTubeAddon():
             # * the description of the instance (from joinpeertube.org)
             # * the number of local videos hosted on this instance
             # * the number of users on this instance
-            description = "{}\n\n----------\nNumber of local videos: {}\n"\
-                          "Number of users: {}".format(
-                          data["shortDescription"].encode("utf-8"),
-                          data["totalLocalVideos"],
-                          data["totalUsers"])
-            # The value of "totalLocalVideos" and "totalUsers" are int so they
-            # don't need to be encoded.
+            description = kodi.get_string(30404).format(
+                data["shortDescription"],
+                data["totalLocalVideos"],
+                data["totalUsers"]
+            )
 
             instance_info = kodi.generate_item_info(
                 name=data["name"],
@@ -201,7 +199,9 @@ class PeerTubeAddon():
             total_pages = (total / self.items_per_page) + 1
 
             next_page_item = kodi.generate_item_info(
-                name="Next page ({}/{})".format(next_page, total_pages),
+                name="{} ({}/{})".format(kodi.get_string(30405),
+                                         next_page,
+                                         total_pages),
                 url=url
             )
 
@@ -281,15 +281,15 @@ class PeerTubeAddon():
 
         home_page_items = [
             kodi.generate_item_info(
-                name="Browse videos on the selected instance",
+                name=kodi.get_string(30406),
                 url=kodi.build_kodi_url({"action": "browse_videos","start": 0})
             ),
             kodi.generate_item_info(
-                name="Search videos on the selected instance",
+                name=kodi.get_string(30407),
                 url=kodi.build_kodi_url({"action": "search_videos","start": 0})
             ),
             kodi.generate_item_info(
-                name="Select another instance",
+                name=kodi.get_string(30408),
                 url=kodi.build_kodi_url({
                     "action": "browse_instances",
                     "start": 0
@@ -309,7 +309,7 @@ class PeerTubeAddon():
 
         # Ask the user which keywords must be searched for
         keywords = kodi.open_input_box(
-            title="Search videos on {}".format(self.peertube.instance))
+            title=kodi.get_string(30409).format(self.peertube.instance))
 
         # Go back to the home page when the user cancels or didn't enter any
         # string
@@ -322,9 +322,8 @@ class PeerTubeAddon():
         # Exit directly when no result is found
         if not results:
             kodi.notif_warning(
-                title="No videos found",
-                message="No videos found matching the keywords '{}'"
-                        .format(keywords))
+                title=kodi.get_string(30410),
+                message=kodi.get_string(30411).format(keywords))
             return
 
         # Extract the information of each video from the API response
@@ -343,15 +342,13 @@ class PeerTubeAddon():
         # download nor play the video as it will fail.
         if not self.libtorrent_imported:
             kodi.open_dialog(
-                title="Error: libtorrent could not be imported",
-                message="PeerTube cannot play videos without libtorrent\n"
-                        "Please follow the instructions at {}"
-                        .format(self.HELP_URL))
+                title=kodi.get_string(30412),
+                message=kodi.get_string(30413).format(self.HELP_URL))
             return
 
         kodi.debug("Starting torrent download ({})".format(torrent_url))
-        kodi.notif_info(title="Download started",
-                        message="The video will be played soon.")
+        kodi.notif_info(title=kodi.get_string(30414),
+                        message=kodi.get_string(30415))
 
         # Start a downloader thread
         AddonSignals.sendSignal("start_download", {"url": torrent_url})
@@ -369,8 +366,8 @@ class PeerTubeAddon():
         # Abort in case of timeout
         if timeout == 10:
             kodi.notif_error(
-                title="Download timeout",
-                message="Timeout fetching {}".format(torrent_url))
+                title=kodi.get_string(30416),
+                message=kodi.get_string(30417).format(torrent_url))
             return
         else:
             # Wait a little before starting playing the torrent
@@ -411,10 +408,12 @@ class PeerTubeAddon():
         kodi.set_setting("preferred_instance", instance)
 
         # Notify the user and log the event
-        message = \
-            "{} is now the selected instance".format(self.peertube.instance)
-        kodi.notif_info(title="Current instance changed", message=message)
-        kodi.debug(message)
+        kodi.notif_info(
+            title=kodi.get_string(30418),
+            message=kodi.get_string(30419).format(self.peertube.instance))
+
+        kodi.debug("{} is now the selected instance"
+                   .format(self.peertube.instance))
 
     def router(self, params):
         """Route the add-on to the requested actions
@@ -460,8 +459,5 @@ class PeerTubeAddon():
             # Display a warning if libtorrent could not be imported
             if not self.libtorrent_imported:
                 kodi.open_dialog(
-                    title="Error: libtorrent could not be imported",
-                    message="You can still browse and search videos but you"
-                            " will not be able to play them (except live"
-                            " videos).\nPlease follow the instructions at {}"
-                            .format(self.HELP_URL))
+                    title=kodi.get_string(30412),
+                    message=kodi.get_string(30420).format(self.HELP_URL))
