@@ -145,9 +145,13 @@ These steps should be followed only by maintainers.
 ## Translation
 
 To translate the add-on you may:
-* edit one of the `strings.po` file existing in the subfolders of
-  `resources/language`
-* create a new `strings.po` for your language
+* update an existing translation &rarr; edit the corresponding
+  `strings.po` file in the folder of `resources/language/resource.language.<lang>`
+* translate the add-on into a new language:
+  * create a new `strings.po` file for your language in
+    `resources/language/resource.language.<lang>`
+  * translate the `summary`, `description` and `disclaimer` tags in the file
+    `addon.xml`
 
 More information about the translation system used by Kodi and its add-ons is
 available [here](https://kodi.wiki/view/Language_support).

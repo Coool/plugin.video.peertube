@@ -158,7 +158,7 @@ msgid "Instance changed"
 msgstr ""
 
 msgctxt "#30419"
-msgid "{} is now the selected instance"
+msgid "{} is now the selected instance."
 msgstr ""
 
 msgctxt "#30420"

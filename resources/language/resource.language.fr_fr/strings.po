@@ -158,8 +158,8 @@ msgid "Instance changed"
 msgstr "Instance modifiée"
 
 msgctxt "#30419"
-msgid "{} is now the selected instance"
-msgstr "{} est maintenant l'instance sélectionnée"
+msgid "{} is now the selected instance."
+msgstr "{} est maintenant l'instance sélectionnée."
 
 msgctxt "#30420"
 msgid "You can still browse and search videos but you will not be able to play them (except live videos).\nPlease follow the instructions at {}"

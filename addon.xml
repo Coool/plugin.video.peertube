@@ -10,15 +10,14 @@
   </extension>
   <extension point="xbmc.service" library="service.py"/>
   <extension point="xbmc.addon.metadata">
-    <summary lang="en_GB">Plugin for PeerTube</summary>
-    <description lang="en_GB">PeerTube is a federated open source alternative to YouTube</description>
+    <summary lang="en_GB">Add-on for PeerTube</summary>
+    <description lang="en_GB">PeerTube is a free, decentralized and federated alternative to other video platforms (like YouTube).</description>
+     <disclaimer lang="en_GB">This add-on is not developed by PeerTube team.</disclaimer>
     <summary lang="fr_FR">Extension pour PeerTube</summary>
-    <description lang="fr_FR">PeerTube est une alternative libre et fédérée à YouTube </description>
-    <disclaimer lang="en_GB"></disclaimer>
-    <language></language>
+    <description lang="fr_FR">PeerTube est une alternative libre, décentralisée et fédérée aux autres plateformes vidéo (comme YouTube).</description>
+    <disclaimer lang="fr_FR">Cette extension n'est pas dévelopée par l'équipe de PeerTube.</disclaimer>
     <platform>all</platform>
     <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
-    <forum></forum>
     <website>https://joinpeertube.org</website>
     <source>https://framagit.org/StCyr/plugin.video.peertube</source>
     <news>Version 1.0.1 (12 April 2021)
@@ -31,7 +30,7 @@ Bugs fixed:
 * Hide the setting related to download files because it was not used
     </news>
     <assets>
-      <icon>icon.png</icon>
+      <icon>resources/icon.png</icon>
     </assets>
   </extension>
 </addon>
