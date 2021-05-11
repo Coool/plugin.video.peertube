@@ -10,6 +10,9 @@
   </extension>
   <extension point="xbmc.service" library="service.py"/>
   <extension point="xbmc.addon.metadata">
+    <summary lang="de_DE">Add-on für PeerTube</summary>
+	<description lang="de_DE">PeerTube ist eine kostenlose, dezentralisierte und föderierte Alternative zu anderen Videoplattformen (wie YouTube).</description>
+	<disclaimer lang="de_DE">Dieses Add-on wird nicht vom PeerTube-Team entwickelt.</disclaimer>
     <summary lang="en_GB">Add-on for PeerTube</summary>
     <description lang="en_GB">PeerTube is a free, decentralized and federated alternative to other video platforms (like YouTube).</description>
      <disclaimer lang="en_GB">This add-on is not developed by PeerTube team.</disclaimer>

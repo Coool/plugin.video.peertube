@@ -216,11 +216,19 @@ class KodiUtils:
         """Open a box for the user to input alphanumeric data
 
         :param str title: Title of the box
-        :return: Entered data or an empty string
+        :return: Entered data as a unicode string
         :rtype: str
         """
-        return xbmcgui.Dialog().input(heading=title,
-                                      type=xbmcgui.INPUT_ALPHANUM)
+        entered_string = xbmcgui.Dialog().input(heading=title,
+                                                type=xbmcgui.INPUT_ALPHANUM)
+
+        # Check the type of the string against the type "bytes" to confirm if
+        # it is a unicode or a byte string ("bytes" is known in both python 2
+        # and 3).
+        if isinstance(entered_string, bytes):
+            return entered_string.decode("utf-8")
+        else:
+            return entered_string
 
     def play(self, url):
         """Play the media behind the URL
