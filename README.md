@@ -29,7 +29,11 @@ for more information.
   If not available, it will play the higher resolution that is the closest from
   your preference.
 
-The following languages are available: English and French.  
+The following languages are available:
+* English
+* French
+* German
+
 If you want to help translating the add-on in your language, check
 [here](contributing.md#translation).
 
