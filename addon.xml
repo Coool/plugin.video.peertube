@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.peertube" name="PeerTube" version="1.1.0" provider-name="Cyrille B. + Thomas B.">
+<addon id="plugin.video.peertube" name="PeerTube" version="1.2.0" provider-name="Cyrille B. + Thomas B.">
   <requires>
     <import addon="xbmc.python" version="2.25.0"/>
     <import addon="script.module.addon.signals" version="0.0.3"/>
@@ -24,17 +24,11 @@
     <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
     <website>https://joinpeertube.org</website>
     <source>https://framagit.org/StCyr/plugin.video.peertube</source>
-    <news>Version 1.1.0 (30th April 2021)
+    <news>Version 1.2.0 (19th May 2021)
 
 New features:
-* Support live stream
-* Translate the add-on into French (thank you @DavidHenryThoreau)
-* Add the description of each video and each instance in the UI
-* Display a notification when the service has started to let the user know the videos can be played (may be useful on slow devices). The notification can be disabled in the settings.
-* Display a notification when the download of the video starts
-* Add the total number of pages in the "Next page" item
-* Rearrange the settings and make some names more explicit
-* The video filter from the settings (local/all-local) is now also used when searching videos
+* Use the add-on script.module.libtorrent to import libtorrent
+* Translate the add-on into German (thank you @QNET17)
     </news>
     <assets>
       <icon>resources/icon.png</icon>
