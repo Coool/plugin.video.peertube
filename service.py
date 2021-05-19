@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
     # Import libtorrent here to manage when the library is not installed
     try:
-        import libtorrent
+        from python_libtorrent import libtorrent
         LIBTORRENT_IMPORTED = True
     except ImportError as exception:
         LIBTORRENT_IMPORTED = False
