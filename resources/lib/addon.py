@@ -13,6 +13,8 @@ import AddonSignals # Module exists only in Kodi - pylint: disable=import-error
 from resources.lib.kodi_utils import kodi
 from resources.lib.peertube import PeerTube, list_instances
 
+import xbmcvfs
+import xbmc
 
 class PeerTubeAddon():
     """
@@ -421,6 +423,8 @@ class PeerTubeAddon():
         :param dict params: Parameters the add-on was called with
         """
 
+        from urllib import quote_plus as url_quote
+
         # Check the parameters passed to the plugin
         if params:
             action = params["action"]
@@ -429,10 +433,25 @@ class PeerTubeAddon():
                 self._browse_videos(int(params["start"]))
             elif action == "search_videos":
                 # Search for videos on the selected instance
-                self._search_videos(int(params["start"]))
+                # self._search_videos(int(params["start"]))
+
+                filename = "torrent://{}".format(url_quote(
+                    "https://framatube.org/static/torrents/c448032c-9d98-4190-a533-02afe7a214b1-270.torrent"))
+                kodi.debug("filename = {}".format(filename))
+                f = xbmcvfs.File(filename)
+                data = f.read()
+                kodi.debug("data = {}".format(data))
+                f.close()
+                
             elif action == "browse_instances":
                 # Browse PeerTube instances
-                self._browse_instances(int(params["start"]))
+                # self._browse_instances(int(params["start"]))
+
+                if xbmcvfs.exists("/Users/Thomas/Desktop/c448032c-9d98-4190-a533-02afe7a214b1-270.torrent"):
+                    kodi.debug("Exists returned True")
+                else:
+                    kodi.debug("Exists returned False")
+
             elif action == "play_video":
                 # This action comes with the id of the video to play as
                 # parameter. The instance may also be in the parameters. Use
