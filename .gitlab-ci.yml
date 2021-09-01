@@ -12,7 +12,7 @@ stages:
 .apt_get_update: &apt_get_update
 - apt-get update > /dev/null
 
-.python3_prep: &python3_prep
+.python_prep: &python_prep
 - apt-get install --yes python3-dev python3-pip > /dev/null
 - python3 -m pip --quiet install -r misc/python_requirements.txt
 
@@ -34,7 +34,7 @@ quality:
       when: manual
   before_script:
   - *apt_get_update
-  - *python3_prep
+  - *python_prep
   script:
     - find . -iname '*.py' | xargs -t python3 -m pylint --rcfile=misc/pylint-rcfile.txt | tee pylint.log
   artifacts:

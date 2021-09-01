@@ -112,8 +112,7 @@ class PeerTube:
         params = self.list_settings.copy()
 
         # Add all the arguments to the dict
-        for param in kwargs:
-            params[param] = kwargs[param]
+        params.update(kwargs)
 
         return params
 

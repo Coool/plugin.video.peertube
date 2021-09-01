@@ -8,18 +8,13 @@
     See LICENSE.txt for more information.
 """
 import os
-try:
-    # Python 3.x
-    from urllib.parse import parse_qsl
-except ImportError:
-    # Python 2.x
-    from urlparse import parse_qsl
 
 from requests.compat import urlencode
+from urllib.parse import parse_qsl
 
-import xbmc # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
+import xbmc
 import xbmcaddon
-import xbmcgui # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
+import xbmcgui
 import xbmcplugin
 
 
@@ -210,7 +205,7 @@ class KodiUtils:
         :param str title: Title of the box
         :param str message: Message in the box
         """
-        xbmcgui.Dialog().ok(heading=title, line1=message)
+        xbmcgui.Dialog().ok(heading=title, message=message)
 
     def open_input_box(self, title):
         """Open a box for the user to input alphanumeric data

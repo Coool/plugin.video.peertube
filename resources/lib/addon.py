@@ -195,13 +195,13 @@ class PeerTubeAddon():
         """
         next_index = current_index + self.items_per_page
         if total > next_index:
-            next_page = (next_index / self.items_per_page) + 1
-            total_pages = (total / self.items_per_page) + 1
+            next_page = (next_index // self.items_per_page) + 1
+            total_pages = (total // self.items_per_page) + 1
 
             next_page_item = kodi.generate_item_info(
-                name=u"{} ({}/{})".format(kodi.get_string(30405),
-                                          next_page,
-                                          total_pages),
+                name="{} ({}/{})".format(kodi.get_string(30405),
+                                         next_page,
+                                         total_pages),
                 url=url
             )
 

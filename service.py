@@ -11,8 +11,8 @@
 
 import AddonSignals # Module exists only in Kodi - pylint: disable=import-error
 from threading import Thread
-import xbmc # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
-import xbmcvfs # Kodistubs for Leia is not compatible with python3 / pylint: disable=syntax-error
+import xbmc
+import xbmcvfs
 
 from resources.lib.kodi_utils import kodi
 
