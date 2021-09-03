@@ -64,7 +64,7 @@ translation:
   # We cannot use a simple "find ... -exec msgcmp {} strings.po" because it
   # would always return 0 as exit code
   script:
-    - files=$(find . -name strings.po -not -path './resources/language/resource.language.en_gb/*') && for file in $files; do echo -e "\n\033[94mChecking translation file $file\033[0m"; msgcmp $file ./resources/language/resource.language.en_gb/strings.po; done
+    - files=$(find . -name strings.po -not -path './resources/language/resource.language.en_gb/*') && for file in $files; do echo -e "\n\033[94mChecking translation file $file\033[0m"; msgcmp $file ./resources/language/resource.language.en_gb/strings.po || continue; done
 
 # Pre-release job: will be available in all the merge requests with release
 # branches in order to verify the release can be actually created. The

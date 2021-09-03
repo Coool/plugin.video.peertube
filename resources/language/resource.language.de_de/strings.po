@@ -77,6 +77,36 @@ msgctxt "#30013"
 msgid "Display a notification when the service starts"
 msgstr "Eine Benachrichtigung anzeigen, wenn der Dienst startet"
 
+msgctxt "#30014"
+msgid "URL of the PeerTube instance to use (with or without the HTTP(s) prefix)"
+msgstr ""
+
+msgctxt "#30015"
+msgid "This notification is especially useful on slow devices where the service"
+" takes time to start."
+msgstr ""
+
+msgctxt "#30016"
+msgid "The greater the longer the pages will take to load."
+msgstr ""
+
+msgctxt "#30017"
+msgid "Note: only ascending order is supported."
+msgstr ""
+
+msgctxt "#30018"
+msgid "[local] Only display the videos which are local to the selected instance"
+"\n[all-local] Only display the videos which are local to the selected instance"
+" [B]plus[/B] the private and unlisted videos (requires admin privileges)"
+msgstr ""
+
+msgctxt "#30019"
+msgid "If the preferred resolution is not available for a given video,"
+" the lower resolution that is the closest to your preference will be used.\n"
+"If not available, the higher resolution that is the closest from your"
+" preference will be used."
+msgstr ""
+
 # -----------------------------------
 # Other strings (from 30400 to 30999)
 # -----------------------------------

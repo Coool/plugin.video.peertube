@@ -1,14 +1,82 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-    <category label="30006">
-        <setting id="preferred_instance" type="text" default="framatube.org" label="30000"/>
-        <setting id="service_start_notif" label="30013" type="bool" default="true"/>
-        <setting label="30007" type="lsep"/>
-        <setting id="items_per_page" type="select" values="10|20|50|100" default="20" label="30001"/>
-        <setting id="video_sort_method" type="select" lvalues="30011|30012" default=1 label="30002"/>
-        <setting id="video_filter" type="select" lvalues="30009|30010" default="0" label="30005"/>
-        <setting label="30008" type="lsep"/>
-        <setting id="preferred_resolution" type="select" values="1080|720|480|360|240" default='480' label="30003"/>
-        <!--<setting id="delete_files" type="bool" default="true" label="30004"/>-->
-    </category>
+<?xml version="1.0" ?>
+<settings version="1">
+    <section id="plugin.video.peertube">
+        <category help="" id="general" label="30006">
+            <group id="1">
+                <setting help="30014" id="preferred_instance" label="30000" type="string">
+                    <level>0</level>
+                    <default>framatube.org</default>
+                    <control format="string" type="edit">
+                        <heading>30000</heading>
+                    </control>
+                </setting>
+                <setting help="30015" id="service_start_notif" label="30013" type="boolean">
+                    <level>0</level>
+                    <default>true</default>
+                    <control type="toggle"/>
+                </setting>
+            </group>
+            <group id="2" label="30007">
+                <setting help="30016" id="items_per_page" label="30001" type="string">
+                    <level>0</level>
+                    <default>20</default>
+                    <constraints>
+                        <options>
+                            <option>10</option>
+                            <option>20</option>
+                            <option>50</option>
+                            <option>100</option>
+                        </options>
+                    </constraints>
+                    <control format="string" type="list">
+                        <heading>30001</heading>
+                    </control>
+                </setting>
+                <setting help="30017" id="video_sort_method" label="30002" type="integer">
+                    <level>0</level>
+                    <default>1</default>
+                    <constraints>
+                        <options>
+                            <option label="30011">0</option>
+                            <option label="30012">1</option>
+                        </options>
+                    </constraints>
+                    <control format="string" type="list">
+                        <heading>30002</heading>
+                    </control>
+                </setting>
+                <setting help="30018" id="video_filter" label="30005" type="integer">
+                    <level>0</level>
+                    <default>0</default>
+                    <constraints>
+                        <options>
+                            <option label="30009">0</option>
+                            <option label="30010">1</option>
+                        </options>
+                    </constraints>
+                    <control format="string" type="list">
+                        <heading>30005</heading>
+                    </control>
+                </setting>
+            </group>
+            <group id="3" label="30008">
+                <setting help="30019" id="preferred_resolution" label="30003" type="string">
+                    <level>0</level>
+                    <default>480</default>
+                    <constraints>
+                        <options>
+                            <option>1080</option>
+                            <option>720</option>
+                            <option>480</option>
+                            <option>360</option>
+                            <option>240</option>
+                        </options>
+                    </constraints>
+                    <control format="string" type="list">
+                        <heading>30003</heading>
+                    </control>
+                </setting>
+            </group>
+        </category>
+    </section>
 </settings>
