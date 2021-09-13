@@ -263,6 +263,15 @@ class KodiUtils:
         """
         xbmc.sleep(time_us)
 
+    def translate_path(self, path):
+        """Translate a path using Kodi specialprotocol to an actual path
+        
+        :param str path: Path using Kodi special protocol
+        :return: Translated path
+        :rtype: str
+        """
+        return xbmc.translatePath(path)
+
     def update_call_info(self, argv):
         """Update the attributes related to the current call of the add-on
 
