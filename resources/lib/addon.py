@@ -9,15 +9,12 @@
     See LICENSE.txt for more information.
 """
 import os.path
-from urllib import quote_plus as url_quote
-
-import AddonSignals # Module exists only in Kodi - pylint: disable=import-error
+from urllib import quote_plus
 
 from resources.lib.kodi_utils import kodi
 from resources.lib.peertube import PeerTube, list_instances
 
 import xbmcvfs
-import xbmc
 
 class PeerTubeAddon():
     """
@@ -350,21 +347,17 @@ class PeerTubeAddon():
 
         # Download the torrent using vfs.libtorrent: the torrent URL must be
         # URL encoded to be correctly read by vfs.libtorrent
-        vfs_url = "torrent://{}".format(url_quote(torrent_url))
-        kodi.debug("vfs_url = {}".format(vfs_url))
-        f = xbmcvfs.File(vfs_url)
-        # data = f.read(1)
-        # kodi.debug("type(data) = {}".format(type(data)))
-        # kodi.debug("data = {}".format(data))
-        f.close()
-        
-        # Currently vfs.libtorrent does not return the path of the downloaded
-        # file so we build it manually (only mp4 videos are supported currently)
-        filename = os.path.basename(torrent_url).replace(".torrent", ".mp4")
-        self.torrent_file = kodi.translate_path(
-            "special://temp/vfs.libtorrent/{}".format(filename))
+        vfs_url = "torrent://{}".format(quote_plus(torrent_url))
+        kodi.debug("URL sent to vfs.libtorrent = {}".format(vfs_url))
+        torrent = xbmcvfs.File(vfs_url)
 
-        # When the download is over, play the file
+        # Get the path of the downloaded file
+        self.torrent_file = torrent.read()
+
+        # Close the file handler because no other information is required
+        torrent.close()
+
+        # Play the file
         kodi.debug("Starting video playback of {}".format(self.torrent_file))
         kodi.play(self.torrent_file)
 
