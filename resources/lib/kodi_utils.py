@@ -281,4 +281,18 @@ class KodiUtils:
         self.addon_handle = int(argv[1])
         self.addon_parameters = argv[2]
 
+    def warning(self, message, prefix=None):
+        """Log a message in Kodi's log with the level xbmc.LOGWARNING
+
+        The message will be prefixed with the prefix passed as argument or with
+        the name of the add-on.
+
+        :param str message: Message to log
+        :param str prefix: String to prefix the message with
+        """
+        if not prefix:
+            prefix = self.addon_name
+
+        xbmc.log("[{}] {}".format(prefix, message), xbmc.LOGWARNING)
+
 kodi = KodiUtils()

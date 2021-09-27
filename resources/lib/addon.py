@@ -8,6 +8,7 @@
     SPDX-License-Identifier: GPL-3.0-only
     See LICENSE.txt for more information.
 """
+import json
 import os.path
 from urllib import quote_plus
 
@@ -342,24 +343,32 @@ class PeerTubeAddon():
         """
 
         kodi.debug("Starting torrent download ({})".format(torrent_url))
-        kodi.notif_info(title=kodi.get_string(30414),
-                        message=kodi.get_string(30415))
 
         # Download the torrent using vfs.libtorrent: the torrent URL must be
         # URL encoded to be correctly read by vfs.libtorrent
         vfs_url = "torrent://{}".format(quote_plus(torrent_url))
-        kodi.debug("URL sent to vfs.libtorrent = {}".format(vfs_url))
         torrent = xbmcvfs.File(vfs_url)
 
-        # Get the path of the downloaded file
-        self.torrent_file = torrent.read()
+        # Download the file
+        if(torrent.write("download")):
 
-        # Close the file handler because no other information is required
-        torrent.close()
+            # Get information about the torrent
+            torrent_info = json.loads(torrent.read())
 
-        # Play the file
-        kodi.debug("Starting video playback of {}".format(self.torrent_file))
-        kodi.play(self.torrent_file)
+            # Build the path of the downloaded file
+            self.torrent_file = os.path.join(torrent_info["save_path"],
+                                             torrent_info["files"][0]["path"])
+
+            if torrent_info["nb_files"] > 1:
+                kodi.warning("There are more than 1 file in {} but only the"
+                             " first one will be played.".format(torrent_url))
+
+            # Play the file
+            kodi.debug("Starting video playback of {}".format(self.torrent_file))
+            kodi.play(self.torrent_file)
+        else:
+            kodi.notif_error(title=kodi.get_string(30421),
+                             message=kodi.get_string(30422))
 
     def _select_instance(self, instance):
         """
