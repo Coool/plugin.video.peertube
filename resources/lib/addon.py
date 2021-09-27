@@ -8,11 +8,14 @@
     SPDX-License-Identifier: GPL-3.0-only
     See LICENSE.txt for more information.
 """
-import AddonSignals # Module exists only in Kodi - pylint: disable=import-error
+import json
+import os.path
+from urllib.parse import quote_plus
 
 from resources.lib.kodi_utils import kodi
 from resources.lib.peertube import PeerTube, list_instances
 
+import xbmcvfs
 
 class PeerTubeAddon():
     """
@@ -338,57 +341,34 @@ class PeerTubeAddon():
 
         :param str torrent_url: URL of the torrent file to download and play
         """
-        # If libtorrent could not be imported, display a message and do not try
-        # download nor play the video as it will fail.
-        if not self.libtorrent_imported:
-            kodi.open_dialog(
-                title=kodi.get_string(30412),
-                message=kodi.get_string(30413).format(self.HELP_URL))
-            return
 
         kodi.debug("Starting torrent download ({})".format(torrent_url))
-        kodi.notif_info(title=kodi.get_string(30414),
-                        message=kodi.get_string(30415))
 
-        # Start a downloader thread
-        AddonSignals.sendSignal("start_download", {"url": torrent_url})
+        # Download the torrent using vfs.libtorrent: the torrent URL must be
+        # URL encoded to be correctly read by vfs.libtorrent
+        vfs_url = "torrent://{}".format(quote_plus(torrent_url))
+        torrent = xbmcvfs.File(vfs_url)
 
-        # Wait until the PeerTubeDownloader has downloaded all the torrent's
-        # metadata
-        AddonSignals.registerSlot(kodi.addon_id,
-                                  "metadata_downloaded",
-                                  self._play_video_continue)
-        timeout = 0
-        while not self.play and timeout < 10:
-            kodi.sleep(1000)
-            timeout += 1
+        # Download the file
+        if(torrent.write("download")):
 
-        # Abort in case of timeout
-        if timeout == 10:
-            kodi.notif_error(
-                title=kodi.get_string(30416),
-                message=kodi.get_string(30417).format(torrent_url))
-            return
+            # Get information about the torrent
+            torrent_info = json.loads(torrent.read())
+
+            # Build the path of the downloaded file
+            self.torrent_file = os.path.join(torrent_info["save_path"],
+                                             torrent_info["files"][0]["path"])
+
+            if torrent_info["nb_files"] > 1:
+                kodi.warning("There are more than 1 file in {} but only the"
+                             " first one will be played.".format(torrent_url))
+
+            # Play the file
+            kodi.debug("Starting video playback of {}".format(self.torrent_file))
+            kodi.play(self.torrent_file)
         else:
-            # Wait a little before starting playing the torrent
-            kodi.sleep(3000)
-
-        # Pass the item to the Kodi player for actual playback.
-        kodi.debug("Starting video playback ({})".format(self.torrent_file))
-        kodi.play(self.torrent_file)
-
-    def _play_video_continue(self, data):
-        """
-        Callback function to let the _play_video method resume when the
-        PeertubeDownloader has downloaded all the torrent's metadata
-
-        :param data: dict of information sent from PeertubeDownloader
-        """
-
-        kodi.debug(
-            "Received metadata_downloaded signal, will start playing media")
-        self.play = True
-        self.torrent_file = data["file"].encode("utf-8")
+            kodi.notif_error(title=kodi.get_string(30421),
+                             message=kodi.get_string(30422))
 
     def _select_instance(self, instance):
         """
@@ -455,9 +435,3 @@ class PeerTubeAddon():
             # Display the addon's main menu when the plugin is called from
             # Kodi UI without any parameters
             self._home_page()
-
-            # Display a warning if libtorrent could not be imported
-            if not self.libtorrent_imported:
-                kodi.open_dialog(
-                    title=kodi.get_string(30412),
-                    message=kodi.get_string(30420).format(self.HELP_URL))

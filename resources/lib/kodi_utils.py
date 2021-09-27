@@ -258,6 +258,15 @@ class KodiUtils:
         """
         xbmc.sleep(time_us)
 
+    def translate_path(self, path):
+        """Translate a path using Kodi specialprotocol to an actual path
+        
+        :param str path: Path using Kodi special protocol
+        :return: Translated path
+        :rtype: str
+        """
+        return xbmc.translatePath(path)
+
     def update_call_info(self, argv):
         """Update the attributes related to the current call of the add-on
 
@@ -266,5 +275,19 @@ class KodiUtils:
         self.addon_url = argv[0]
         self.addon_handle = int(argv[1])
         self.addon_parameters = argv[2]
+
+    def warning(self, message, prefix=None):
+        """Log a message in Kodi's log with the level xbmc.LOGWARNING
+
+        The message will be prefixed with the prefix passed as argument or with
+        the name of the add-on.
+
+        :param str message: Message to log
+        :param str prefix: String to prefix the message with
+        """
+        if not prefix:
+            prefix = self.addon_name
+
+        xbmc.log("[{}] {}".format(prefix, message), xbmc.LOGWARNING)
 
 kodi = KodiUtils()

@@ -167,13 +167,9 @@ msgctxt "#30413"
 msgid "PeerTube cannot play videos without libtorrent\nPlease follow the instructions at {}"
 msgstr ""
 
-msgctxt "#30414"
-msgid "Download started"
-msgstr ""
+# 30414 is not used anymore
 
-msgctxt "#30415"
-msgid "The video will be played soon."
-msgstr ""
+# 30415 is not used anymore
 
 msgctxt "#30416"
 msgid "Download timeout"
@@ -193,4 +189,12 @@ msgstr ""
 
 msgctxt "#30420"
 msgid "You can still browse and search videos but you will not be able to play them (except live videos).\nPlease follow the instructions at {}"
+msgstr ""
+
+msgctxt "#30421"
+msgid "Download error"
+msgstr ""
+
+msgctxt "#30422"
+msgid "Error when trying to download the video. Check the log for more information."
 msgstr ""
