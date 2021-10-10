@@ -86,7 +86,7 @@ msgid "PeerTube service started"
 msgstr ""
 
 msgctxt "#30401"
-msgid "Torrents can now be downloaded."
+msgid "Torrents can now be controlled."
 msgstr ""
 
 msgctxt "#30402"

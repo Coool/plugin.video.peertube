@@ -15,15 +15,13 @@ from urllib import quote_plus
 from resources.lib.kodi_utils import kodi
 from resources.lib.peertube import PeerTube, list_instances
 
+import AddonSignals
 import xbmcvfs
 
 class PeerTubeAddon():
     """
     Main class used by the add-on
     """
-
-    # URL of the page which explains how to install libtorrent
-    HELP_URL = "https://link.infini.fr/libtorrent-peertube-kodi"
 
     def __init__(self):
         """Initialize parameters and create a PeerTube instance"""
@@ -39,14 +37,6 @@ class PeerTubeAddon():
         self.play = False
         self.torrent_name = ""
         self.torrent_file = ""
-
-        # Check whether libtorrent could be imported by the service. The value
-        # of the associated property is retrieved only once and stored in an
-        # attribute because libtorrent is imported only once at the beginning
-        # of the service (we assume it is not possible to start the add-on
-        # before the service)
-        self.libtorrent_imported = \
-            kodi.get_property("libtorrent_imported") == "True"
 
         # Create a PeerTube object to send requests: settings which are used
         # only by this object are directly retrieved from the settings
@@ -349,6 +339,8 @@ class PeerTubeAddon():
         vfs_url = "torrent://{}".format(quote_plus(torrent_url))
         torrent = xbmcvfs.File(vfs_url)
 
+        AddonSignals.sendSignal("get_torrent", {"torrent_url": vfs_url})
+
         # Download the file
         if(torrent.write("download")):
 
@@ -366,6 +358,7 @@ class PeerTubeAddon():
             # Play the file
             kodi.debug("Starting video playback of {}".format(self.torrent_file))
             kodi.play(self.torrent_file)
+
         else:
             kodi.notif_error(title=kodi.get_string(30421),
                              message=kodi.get_string(30422))
