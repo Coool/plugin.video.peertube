@@ -33,11 +33,6 @@ class PeerTubeAddon():
         self.preferred_resolution = \
             int(kodi.get_setting("preferred_resolution"))
 
-        # Nothing to play at initialisation
-        self.play = False
-        self.torrent_name = ""
-        self.torrent_file = ""
-
         # Create a PeerTube object to send requests: settings which are used
         # only by this object are directly retrieved from the settings
         self.peertube = PeerTube(
@@ -200,46 +195,35 @@ class PeerTubeAddon():
 
             return next_page_item
 
-    def _get_video_url(self, video_id, instance=None):
-        """Return the URL of a video and its type (live or not)
-
-        Find the URL of the video with the best possible quality matching
-        user's preferences.
-        The information whether the video is live or not will also be returned.
-
-        :param str video_id: ID of the torrent linked with the video
-        :param str instance: PeerTube instance hosting the video (optional)
-        :return: a boolean indicating if the video is a live stream and the URL
-        of the video (containing the resolution for non-live videos) as a
-        string
-        :rtype: tuple
+    def _get_url_with_resolution(self, list_of_url_and_resolutions):
         """
-        # Retrieve the information about the video including the different
-        # resolutions available
-        video_files = self.peertube.get_video_urls(video_id, instance=instance)
+        Build the URL of the video 
+
+        PeerTube creates 1 URL for each resolution so we browse all the
+        available resolutions and select the best possible quality matching
+        user's preferences.
+        If the preferred resolution cannot be found, the one just below will
+        be used. If it is not possible the one just above we will be used.
+
+        :param list list_of_url_and_resolutions: list of dict containing 2 keys:
+        the resolution and the associated URL.
+        :return: the URL matching the selected resolution
+        :rtype: str
+        """
 
         # Find the best resolution matching user's preferences
         current_resolution = 0
         higher_resolution = -1
-        url = ""
-        is_live = False
-        for video in video_files:
+        url = None
+        for video in list_of_url_and_resolutions:
             # Get the resolution
             resolution = video.get("resolution")
-            if resolution is None:
-                # If there is no resolution in the dict, then the video is a
-                # live stream: no need to find the best resolution as there is
-                # only 1 URL in this case
-                url = video["url"]
-                is_live = True
-                return (is_live, url)
             if resolution == self.preferred_resolution:
                 # Stop directly when we find the exact same resolution as the
                 # user's preferred one
                 kodi.debug("Found video with preferred resolution ({})"
                            .format(self.preferred_resolution))
-                url = video["url"]
-                return (is_live, url)
+                return video["url"]
             elif (resolution < self.preferred_resolution
                     and resolution > current_resolution):
                 # Otherwise, try to find the best one just below the user's
@@ -262,12 +246,12 @@ class PeerTubeAddon():
 
         # When we didn't find a resolution equal or lower than the user's
         # preferred one, use the resolution just above the preferred one
-        if not url:
+        if url is None:
             kodi.debug("Using video with higher resolution as alternative ({})"
                         .format(higher_resolution))
             url = backup_url
 
-        return (is_live, url)
+        return url
 
     def _home_page(self):
         """Display the items of the home page of the add-on"""
@@ -325,39 +309,86 @@ class PeerTubeAddon():
         # Create the associated items in Kodi
         kodi.create_items_in_ui(list_of_videos)
 
-    def _play_video(self, torrent_url):
+    def _play_video(self, video_id, instance):
+        """
+        Get the required information and play the video
+
+        :param str video_id: ID of the torrent linked with the video
+        :param str instance: PeerTube instance hosting the video
+        """
+
+        # Get the information of the video including the different resolutions
+        # available
+        video_info = self.peertube.get_video_info(video_id, instance)
+
+        # Check if the video is a live (Kodi can play live videos (.m3u8) out of
+        # the box whereas torrents must first be downloaded)
+        if video_info["is_live"]:
+            kodi.play(video_info["files"][0]["url"])
+        else:
+            # Get the URL of the file which resolution is the closest to the
+            # user's preferences
+            url = self._get_url_with_resolution(video_info["files"])
+
+            self._download_and_play(url, int(video_info["duration"]))
+
+    def _download_and_play(self, torrent_url, duration):
         """
         Start the torrent's download and play it while being downloaded
 
+        The user configures in the settings the number of seconds of the file
+        that must be downloaded before the playback starts.
+
         :param str torrent_url: URL of the torrent file to download and play
+        :param int duration: duration of the video behind the URL in seconds
         """
 
         kodi.debug("Starting torrent download ({})".format(torrent_url))
 
         # Download the torrent using vfs.libtorrent: the torrent URL must be
-        # URL encoded to be correctly read by vfs.libtorrent
+        # URL-encoded to be correctly read by vfs.libtorrent
         vfs_url = "torrent://{}".format(quote_plus(torrent_url))
         torrent = xbmcvfs.File(vfs_url)
 
-        AddonSignals.sendSignal("get_torrent", {"torrent_url": vfs_url})
+        # Get information about the torrent
+        torrent_info = json.loads(torrent.read())
 
-        # Download the file
-        if(torrent.write("download")):
+        if torrent_info["nb_files"] > 1:
+            kodi.warning("There are more than 1 file in {} but only the"
+                         " first one will be played.".format(torrent_url))
 
-            # Get information about the torrent
-            torrent_info = json.loads(torrent.read())
+        # Compute the amount of the file that we want to wait to be downloaded
+        # before playing the video. It is based on the number of seconds
+        # configured by the user and the total duration of the video.
+        initial_chunk_proportion = (int(kodi.get_setting("initial_wait_time"))
+                                    * 100. / duration)
+        # TODO: Remove the dot in 100. in python 3? Or keep it to suport both
+        #       python2 and python3
+
+        kodi.debug("initial_chunk_proportion = {}".format(initial_chunk_proportion))
+
+        # Download the file, waiting for "initial_chunk_proportion" % of the
+        # file to be downloaded (seek() takes only integers so the proportion
+        # is multiplied to have more granularity.)
+        if(torrent.seek(initial_chunk_proportion*100, 0) != -1):
 
             # Build the path of the downloaded file
-            self.torrent_file = os.path.join(torrent_info["save_path"],
+            torrent_file = os.path.join(torrent_info["save_path"],
                                              torrent_info["files"][0]["path"])
 
-            if torrent_info["nb_files"] > 1:
-                kodi.warning("There are more than 1 file in {} but only the"
-                             " first one will be played.".format(torrent_url))
+            # Send information about the torrent to the service so that it can
+            # control the torrent later(e.g. pause the download when the
+            # playback stops)
+            AddonSignals.sendSignal("torrent_information",
+                {
+                    "run_url": kodi.build_kodi_url(kodi.get_run_parameters()),
+                    "torrent_url": vfs_url
+                }
+            )
 
             # Play the file
-            kodi.debug("Starting video playback of {}".format(self.torrent_file))
-            kodi.play(self.torrent_file)
+            kodi.debug("Starting video playback of {}".format(torrent_file))
+            kodi.play(torrent_file)
 
         else:
             kodi.notif_error(title=kodi.get_string(30421),
@@ -407,20 +438,8 @@ class PeerTubeAddon():
                 # Browse PeerTube instances
                 self._browse_instances(int(params["start"]))
             elif action == "play_video":
-                # This action comes with the id of the video to play as
-                # parameter. The instance may also be in the parameters. Use
-                # these parameters to retrieve the complete URL of the video
-                # (containing the resolution) and the type of the video (live
-                # or not).
-                is_live, url = self._get_video_url(
-                    instance=params.get("instance"),video_id=params.get("id"))
-
-                # Play the video (Kodi can play live videos (.m3u8) out of the
-                # box whereas torrents must first be downloaded)
-                if is_live:
-                    kodi.play(url)
-                else:
-                    self._play_video(url)
+                self._play_video(instance=params.get("instance"),
+                                 video_id=params.get("id"))
             elif action == "select_instance":
                 # Set the selected instance as the preferred instance
                 self._select_instance(params["url"])

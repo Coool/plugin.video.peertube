@@ -77,6 +77,10 @@ msgctxt "#30013"
 msgid "Display a notification when the service starts"
 msgstr ""
 
+msgctxt "#30014"
+msgid "Wait time before starting playback (seconds)"
+msgstr ""
+
 # -----------------------------------
 # Other strings (from 30400 to 30999)
 # -----------------------------------
@@ -86,7 +90,7 @@ msgid "PeerTube service started"
 msgstr ""
 
 msgctxt "#30401"
-msgid "Torrents can now be controlled."
+msgid "You may now start playing videos."
 msgstr ""
 
 msgctxt "#30402"
@@ -129,13 +133,9 @@ msgctxt "#30411"
 msgid "No videos found matching the keywords '{}'"
 msgstr ""
 
-msgctxt "#30412"
-msgid "Error: libtorrent could not be imported"
-msgstr ""
+# 30412 is not used anymore
 
-msgctxt "#30413"
-msgid "PeerTube cannot play videos without libtorrent\nPlease follow the instructions at {}"
-msgstr ""
+# 30413 is not used anymore
 
 # 30414 is not used anymore
 
@@ -157,9 +157,7 @@ msgctxt "#30419"
 msgid "{} is now the selected instance."
 msgstr ""
 
-msgctxt "#30420"
-msgid "You can still browse and search videos but you will not be able to play them (except live videos).\nPlease follow the instructions at {}"
-msgstr ""
+# 30420 is not used anymore
 
 msgctxt "#30421"
 msgid "Download error"
@@ -167,4 +165,12 @@ msgstr ""
 
 msgctxt "#30422"
 msgid "Error when trying to download the video. Check the log for more information."
+msgstr ""
+
+msgctxt "#30423"
+msgid "Playback error"
+msgstr ""
+
+msgctxt "#30424"
+msgid "When the playback started, the portion of the video that was downloaded was probably not big enough. Do you want to try again to play the video?\n(If this error occurs often you should increase the initial wait time in the settings.)"
 msgstr ""

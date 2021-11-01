@@ -9,6 +9,6 @@
         <setting id="video_filter" type="select" lvalues="30009|30010" default="0" label="30005"/>
         <setting label="30008" type="lsep"/>
         <setting id="preferred_resolution" type="select" values="1080|720|480|360|240" default='480' label="30003"/>
-        <!--<setting id="delete_files" type="bool" default="true" label="30004"/>-->
+        <setting id="initial_wait_time" type="slider" range="0,1,30" default="10" option="int" label="30014"/>
     </category>
 </settings>
