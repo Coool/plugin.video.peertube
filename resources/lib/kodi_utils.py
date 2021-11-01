@@ -206,6 +206,13 @@ class KodiUtils:
         :param str message: Message in the box
         """
         xbmcgui.Dialog().ok(heading=title, message=message)
+        #TODO: this function is not used anymore: keep it?
+
+    def open_dialog_progress(self):
+        """Open a dialog box with a progress bar
+
+        """
+        return xbmcgui.DialogProgress()
 
     def open_input_box(self, title):
         """Open a box for the user to input alphanumeric data
@@ -224,6 +231,16 @@ class KodiUtils:
             return entered_string.decode("utf-8")
         else:
             return entered_string
+        #TODO: keep this code for Matrix?
+
+
+    def open_yes_no_dialog(self, title, message):
+        """Open a dialog box with "Yes" "No" buttons
+
+        :param str title: Title of the box
+        :param str message: Message in the box
+        """
+        return xbmcgui.Dialog().yesno(heading=title, message=message)
 
     def play(self, url):
         """Play the media behind the URL

@@ -113,6 +113,18 @@ msgstr "Si la résolution préférée n'est pas disponible pour une vidéo donn�
 "Si elle n'est pas disponible, la résolution plus haute et la plus proche de"
 " votre préférence sera utilisée."
 
+msgctxt "#30020"
+msgid "Size of the initial chunk to download (seconds)"
+msgstr "Taille du premier morceau à télécharger (secondes)"
+
+msgctxt "#30021"
+msgid "Number of seconds in the video to download before starting playback."
+" You should adapt this value depending on the power of your machine and the"
+" speed of your internet connection."
+msgstr "Nombre de secondes dans la vidéo à télécharger avant de lancer la"
+"lecture. Vous devriez ajuster cette valeur en fonction de la puissance de"
+" votre machine et de la vitesse de votre connexion internet."
+
 # -----------------------------------
 # Other strings (from 30400 to 30999)
 # -----------------------------------
@@ -122,8 +134,8 @@ msgid "PeerTube service started"
 msgstr "Le service PeerTube a démarré"
 
 msgctxt "#30401"
-msgid "Torrents can now be downloaded."
-msgstr "Les torrents peuvent maintenant être téléchargés."
+msgid "You may now start playing videos."
+msgstr "Vous pouvez maintenant lire des vidéos."
 
 msgctxt "#30402"
 msgid "Request error"
@@ -165,13 +177,9 @@ msgctxt "#30411"
 msgid "No videos found matching the keywords '{}'"
 msgstr "Aucune vidéo ne correspond aux mots-clés '{}'"
 
-msgctxt "#30412"
-msgid "Error: libtorrent could not be imported"
-msgstr "Erreur: libtorrent n'a pas pu être importé"
+# 30412 is not used anymore
 
-msgctxt "#30413"
-msgid "PeerTube cannot play videos without libtorrent\nPlease follow the instructions at {}"
-msgstr "PeerTube ne peut pas lire de vidéos sans libtorrent.\nMerci de suivre les instructions depuis {}"
+# 30413 is not used anymore
 
 # 30414 is not used anymore
 
@@ -193,9 +201,7 @@ msgctxt "#30419"
 msgid "{} is now the selected instance."
 msgstr "{} est maintenant l'instance sélectionnée."
 
-msgctxt "#30420"
-msgid "You can still browse and search videos but you will not be able to play them (except live videos).\nPlease follow the instructions at {}"
-msgstr "Vous pouvez parcourir ou chercher des vidéos mais vous ne pourrez pas les lire (sauf les live).\nMerci de suivre les instructions depuis {}"
+# 30420 is not used anymore
 
 msgctxt "#30421"
 msgid "Download error"
@@ -204,3 +210,11 @@ msgstr "Erreur de téléchargement"
 msgctxt "#30422"
 msgid "Error when trying to download the video. Check the log for more information."
 msgstr "Une erreur est survenue pendant le téléchargement de la vidéo. Voir le journal pour plus d'informations."
+
+msgctxt "#30423"
+msgid "Playback error"
+msgstr "Erreur de lecture"
+
+msgctxt "#30424"
+msgid "When the playback started, the portion of the video that was downloaded was probably not big enough. Do you want to try again to play the video?\n(If this error occurs often you should increase the initial wait time in the settings.)"
+msgstr "Quand la lecture a démarré, la portion de la vidéo qui avait été téléchargée était certainement trop petite. Voulez-vous essayer de lire la vidéo à nouveau ?\n(Si cette erreur survient souvent vous devriez augmenter le délai d'attente initial dans les paramètres.)"

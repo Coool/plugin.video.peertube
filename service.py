@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    PeerTube service to download torrents in the background
+    PeerTube service to perform action on torrents in background
 
     Copyright (C) 2018 Cyrille Bollu
     Copyright (C) 2021 Thomas Bétous
@@ -8,73 +8,101 @@
     SPDX-License-Identifier: GPL-3.0-only
     See LICENSE.txt for more information.
 """
-
-import AddonSignals # Module exists only in Kodi - pylint: disable=import-error
-from threading import Thread
+import AddonSignals
 import xbmc
 import xbmcvfs
 
 from resources.lib.kodi_utils import kodi
 
-class PeertubeDownloader(Thread):
-    """
-    A class to download PeerTube torrents in the background
-    """
-
-    def __init__(self, url, temp_dir):
-        """
-        Initialise a PeertubeDownloader instance for downloading the torrent
-        specified by url
-
-        :param url, temp_dir: str
-        :return: None
-        """
-        Thread.__init__(self)
-        self.torrent = url
-        self.temp_dir = temp_dir
+class PeertubePlayer(xbmc.Player):
+    # Initialize the attributes and call the parent class constructor
+    def __init__(self):
+        self.torrent_url = None
+        self.run_url = None
+        self.playback_started = False
+        super(xbmc.Player, self).__init__()
+        # TODO: Use the python3 format on Matrix
+        # super().__init__()
 
     def debug(self, message):
-        """Log a debug message
+        """Log a debug message with the name of the class as prefix
 
-        :param str message: Message to log (will be prefixed with the name of
-        the class)
+        :param str message: message to log
         """
-        kodi.debug(message=message, prefix="PeertubeDownloader")
+        kodi.debug(message=message, prefix="PeertubePlayer")
 
-    def run(self):
+    def onAVStarted(self):
+        """Callback called when Kodi has a video stream.
+
+        When it is called we consider that the video is actually being played
+        and we set the according flag.
         """
-        Download the torrent specified by self.torrent
-        :param: None
-        :return: None
+        # Check if the file that is being played belongs to this add-on to not
+        # conflict with other add-ons or players.
+        if self.torrent_url is not None:
+            self.playback_started = True
+            self.debug(message="Playback started for {}".format(self.file_name))
+
+    def onPlayBackStopped(self):
+        """Callback called when the playback stops
+
+        If the file was actually being played (i.e. onAVStarted() was called for
+        this file before), then we consider that the playback didn't encounter
+        any error and it was stopped willingly by the user. In this case we
+        pause the download of the torrent to avoid downloading in background a
+        video which may never be played again.
+        But if no file was being played, we ask the user if we should try again
+        to play the file: it supports the use case when the playback started
+        whereas the portion of the file that was downloaded was not big enough.
         """
+        # First check if the file that was being played belongs to this add-on
+        # to not conflict with other add-ons or players.
+        if self.torrent_url is not None:
+            # Then check if the playback actually started: if the playback
+            # didn't start (probably because there was a too small portion of
+            # the file that was downloaded), do not pause the torrent (Kodi 
+            # do not call onPlayBackError() in this case for some reason...)
+            # and ask the user what should be done.
+            # Otherwise pause the torrent because we consider the user decided
+            # to stop the playback.
+            if self.playback_started:
+                self.debug(message="Playback stopped: pausing download...")
+                self.pause_torrent()
+                self.torrent_url = None
+                self.playback_started = False
+            else:
+                self.debug(message="Playback stopped but an error was"
+                                    " detected: asking the user what should be"
+                                    " done.")
+                if kodi.open_yes_no_dialog(title=kodi.get_string(30423),
+                                           message=kodi.get_string(30424)):
+                    self.debug(message="Trying to play the video again...")
+                    self.play(item=self.run_url)
+                else:
+                    self.debug(message="Pausing the download...")
+                    self.pause_torrent()
+                    self.torrent_url = None
+                    self.playback_started = False
 
-        self.debug("Opening BitTorent session")
-        # Open BitTorrent session
-        ses = libtorrent.session()
-        ses.listen_on(6881, 6891)
+    def pause_torrent(self):
+        """Pause download of the torrent self.torrent_url"""
+        # Get the torrent handle
+        torrent = xbmcvfs.File(self.torrent_url)
+        # Call seek() with -1 to pause the torrent. 0 is used as second argument
+        # so that GetLength() is not called.
+        # TODO: ommit the second argument on Matrix
+        torrent.seek(-1, 0)
 
-        # Add torrent
-        self.debug("Adding torrent {}".format(self.torrent))
-        h = ses.add_torrent({"url": self.torrent, "save_path": self.temp_dir})
+    def update_torrent_info(self, data):
+        """Save the information about the torrent being played currently
 
-        # Set sequential mode to allow watching while downloading
-        h.set_sequential_download(True)
+        This function is called through AddonSignals when a video is played.
+        """
+        self.torrent_url = data["torrent_url"]
+        self.run_url = data["run_url"]
+        self.debug(message="Received information:\nURL={}\nrun_url={}"
+                           .format(self.torrent_url, self.run_url))
 
-        # Download torrent
-        self.debug("Downloading torrent {}".format(self.torrent))
-        signal_sent = 0
-        while not h.is_seed():
-            xbmc.sleep(1000)
-            s = h.status()
-            # Inform addon that all the metadata has been downloaded and that
-            # it may start playing the torrent
-            if s.state >=3 and signal_sent == 0:
-                self.debug("Received all torrent metadata, notifying"
-                           " PeertubeAddon")
-                i = h.torrent_file()
-                f = self.temp_dir + i.name()
-                AddonSignals.sendSignal("metadata_downloaded", {"file": f})
-                signal_sent = 1
 
 class PeertubeService():
     """
@@ -83,13 +111,10 @@ class PeertubeService():
 
     def __init__(self):
         """
-        PeertubeService initialisation function
+        Create an instance of PeertubePlayer that will always be active
+        (required to monitor the events and call the callbacks)
         """
-        # Create our temporary directory
-        self.temp = "{}{}".format(xbmc.translatePath("special://temp"),
-                                  "plugin.video.peertube/")
-        if not xbmcvfs.exists(self.temp):
-            xbmcvfs.mkdir(self.temp)
+        self.player = PeertubePlayer()
 
     def debug(self, message):
         """Log a debug message
@@ -99,62 +124,35 @@ class PeertubeService():
         """
         kodi.debug(message=message, prefix="PeertubeService")
 
-    def download_torrent(self, data):
-        """
-        Start a downloader thread to download torrent specified by data["url"]
-        :param data: dict
-        :return: None
-        """
-
-        self.debug("Received a start_download signal")
-        downloader = PeertubeDownloader(data["url"], self.temp)
-        downloader.start()
-
     def run(self):
         """
         Main loop of the PeertubeService class
 
-        It registers the start_download signal to start a PeertubeDownloader
-        thread when needed, and exit when Kodi is shutting down.
         """
 
-        self.debug("Starting")
-
-        # Launch the download_torrent callback function when the
-        # "start_download" signal is received
+        # Signal that is sent by the main script of the add-on
         AddonSignals.registerSlot(kodi.addon_id,
-                                  "start_download",
-                                  self.download_torrent)
+                                  "torrent_information",
+                                  self.player.update_torrent_info)
 
-        # Monitor Kodi's shutdown signal
-        self.debug("Service started, waiting for signals")
+
+        # Display a notification now that the service started.
+        self.debug("Service started")
         if kodi.get_setting("service_start_notif") == "true":
             kodi.notif_info(title=kodi.get_string(30400),
                             message=kodi.get_string(30401))
+
+        # Run the service until Kodi exits
         monitor = xbmc.Monitor()
         while not monitor.abortRequested():
             if monitor.waitForAbort(1):
-                # Abort was requested while waiting. We must exit
-                # TODO: Clean temporary directory
+                # Abort was requested while waiting. We must exit.
                 self.debug("Exiting")
                 break
 
 if __name__ == "__main__":
     # Create a PeertubeService instance
     service = PeertubeService()
-
-    # Import libtorrent here to manage when the library is not installed
-    try:
-        from python_libtorrent import libtorrent
-        LIBTORRENT_IMPORTED = True
-    except ImportError as exception:
-        LIBTORRENT_IMPORTED = False
-        service.debug("The libtorrent library could not be imported because of"
-                      " the following error:\n{}".format(exception))
-
-    # Save whether libtorrent could be imported as a window property so that
-    # this information can be retrieved by the add-on
-    kodi.set_property("libtorrent_imported", str(LIBTORRENT_IMPORTED))
 
     # Start the service
     service.run()

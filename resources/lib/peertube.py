@@ -142,31 +142,44 @@ class PeerTube:
         sort_methods = ["likes", "views"]
         return sort_methods[int(kodi.get_setting("video_sort_method"))]
 
-    def get_video_urls(self, video_id, instance=None):
-        """Return the URLs of a video
+    def get_video_info(self, video_id, instance=None):
+        """Return the info of a video in a simple form
 
-        PeerTube creates 1 URL for each resolution of a video so this method
-        returns a list of URL/resolution pairs. In the case of a live video,
-        only an URL will be returned (no resolution).
+        Get the information of the video from the PeerTube instance and
+        preprocess some of it so that it can be easily used outside of this
+        class. The returned information are:
+         - the type of the video (live or not)
+         - a list of URL/resolution pairs (PeerTube creates 1 URL for each
+           resolution of a video). In the case of a live video, only 1 URL will
+           be returned (as there is no resolution).
+         - the duration (in seconds) of the video (only if it is not a live)
 
         :param str video_id: ID or UUID of the video
         :param str instance: URL of the instance hosting the video. The
         configured instance will be used if empty.
-        :return: pair(s) of URL/resolution
-        :rtype: generator
+        :return: information of the video
+        :rtype: dict
         """
         # Get the information about the video
         metadata = self._request(method="GET",
                                  url="videos/{}".format(video_id),
                                  instance=instance)
 
+        video_info = {}
+
         if metadata["isLive"]:
-            # When the video is a live, yield the unique playlist URL (there is
-            # no resolution in this case)
-            yield {
-                "url": metadata['streamingPlaylists'][0]['playlistUrl'],
-            }
+            video_info["is_live"] = True
+            # When the video is a live, return the unique playlist URL (there is
+            # no resolution in this case). Even in this case the format of the
+            # structure is preserved: we use a list of dict with the key "url"
+            video_info["files"] = [
+                {"url": metadata['streamingPlaylists'][0]['playlistUrl']}
+            ]
         else:
+            video_info["is_live"] = False
+            # Add the duration in the returned info
+            video_info["duration"] = metadata["duration"]
+
             # For non live videos, the files corresponding to different
             # resolutions available for a video may be stored in "files" or
             # "streamingPlaylists[].files" depending if WebTorrent is enabled
@@ -177,11 +190,17 @@ class PeerTube:
             else:
                 files = metadata["streamingPlaylists"][0]["files"]
 
+            video_urls = []
             for file in files:
-                yield {
-                    "resolution": int(file["resolution"]["id"]),
-                    "url": file["torrentUrl"],
-                }
+                video_urls.append(
+                    {
+                        "resolution": int(file["resolution"]["id"]),
+                        "url": file["torrentUrl"],
+                    }
+                )
+            video_info["files"] = video_urls
+
+        return video_info
 
     def list_videos(self, start):
         """List the videos in the instance

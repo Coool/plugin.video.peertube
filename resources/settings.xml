@@ -76,6 +76,20 @@
                         <heading>30003</heading>
                     </control>
                 </setting>
+                <setting help="30021" id="initial_wait_time" label="30020" type="integer">
+                    <level>0</level>
+                    <default>10</default>
+                    <constraints>
+                        <options>
+                            <minimum>0</minimum>
+                            <step>1</step>
+                            <maximum>30</maximum>
+                        </options>
+                    </constraints>
+                    <control type="slider" format="integer">
+                        <popup>false</popup>
+                    </control>
+                </setting>
             </group>
         </category>
     </section>
