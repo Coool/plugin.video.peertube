@@ -122,7 +122,7 @@ msgid "Number of seconds in the video to download before starting playback."
 " You should adapt this value depending on the power of your machine and the"
 " speed of your internet connection."
 msgstr "Nombre de secondes dans la vidéo à télécharger avant de lancer la"
-"lecture. Vous devriez ajuster cette valeur en fonction de la puissance de"
+" lecture. Vous devriez ajuster cette valeur en fonction de la puissance de"
 " votre machine et de la vitesse de votre connexion internet."
 
 # -----------------------------------

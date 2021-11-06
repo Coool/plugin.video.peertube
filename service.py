@@ -41,7 +41,7 @@ class PeertubePlayer(xbmc.Player):
         # conflict with other add-ons or players.
         if self.torrent_url is not None:
             self.playback_started = True
-            self.debug(message="Playback started for {}".format(self.file_name))
+            self.debug(message="Playback started for {}".format(self.torrent_url))
 
     def onPlayBackStopped(self):
         """Callback called when the playback stops
@@ -88,10 +88,8 @@ class PeertubePlayer(xbmc.Player):
         """Pause download of the torrent self.torrent_url"""
         # Get the torrent handle
         torrent = xbmcvfs.File(self.torrent_url)
-        # Call seek() with -1 to pause the torrent. 0 is used as second argument
-        # so that GetLength() is not called.
-        # TODO: ommit the second argument on Matrix
-        torrent.seek(-1, 0)
+        # Call seek() with -1 to pause the torrent.
+        torrent.seek(-1)
 
     def update_torrent_info(self, data):
         """Save the information about the torrent being played currently

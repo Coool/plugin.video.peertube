@@ -361,14 +361,12 @@ class PeerTubeAddon():
         # before playing the video. It is based on the number of seconds
         # configured by the user and the total duration of the video.
         initial_chunk_proportion = (int(kodi.get_setting("initial_wait_time"))
-                                    * 100. / duration)
-        # TODO: Remove the dot in 100. in python 3? Or keep it to suport both
-        #       python2 and python3
+                                    * 100 / duration)
 
         # Download the file, waiting for "initial_chunk_proportion" % of the
         # file to be downloaded (seek() takes only integers so the proportion
         # is multiplied to have more granularity.)
-        if(torrent.seek(initial_chunk_proportion*100, 0) != -1):
+        if(torrent.seek(int(initial_chunk_proportion*100)) != -1):
 
             # Build the path of the downloaded file
             torrent_file = os.path.join(torrent_info["save_path"],

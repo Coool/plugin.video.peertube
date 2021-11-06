@@ -80,11 +80,9 @@
                     <level>0</level>
                     <default>10</default>
                     <constraints>
-                        <options>
-                            <minimum>0</minimum>
-                            <step>1</step>
-                            <maximum>30</maximum>
-                        </options>
+                        <minimum>0</minimum>
+                        <step>1</step>
+                        <maximum>30</maximum>
                     </constraints>
                     <control type="slider" format="integer">
                         <popup>false</popup>
