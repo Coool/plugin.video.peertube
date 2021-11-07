@@ -88,6 +88,13 @@
                         <popup>false</popup>
                     </control>
                 </setting>
+                <setting help="30023" id="vfs_libtorrent_settings" label="30022" type="action">
+                    <level>0</level>
+                    <data>Addon.OpenSettings(vfs.libtorrent)</data>
+                    <control type="button" format="action">
+                        <close>true</close>
+                    </control>
+                </setting>
             </group>
         </category>
     </section>

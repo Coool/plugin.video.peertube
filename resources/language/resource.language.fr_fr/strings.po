@@ -125,6 +125,14 @@ msgstr "Nombre de secondes dans la vidéo à télécharger avant de lancer la"
 " lecture. Vous devriez ajuster cette valeur en fonction de la puissance de"
 " votre machine et de la vitesse de votre connexion internet."
 
+msgctxt "#30022"
+msgid "Open vfs.libtorrent settings"
+msgstr "Ouvrir les paramètres de vfs.libtorrent"
+
+msgctxt "#30023"
+msgid "vfs.libtorrent is the add-on responsible for downloading the videos via BitTorrent"
+msgstr "vfs.libtorrent est l'extension responsable du téléchargement des vidéos via BitTorrent"
+
 # -----------------------------------
 # Other strings (from 30400 to 30999)
 # -----------------------------------

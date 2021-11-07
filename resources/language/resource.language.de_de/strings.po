@@ -117,6 +117,14 @@ msgid "Number of seconds in the video to download before starting playback."
 " speed of your internet connection."
 msgstr ""
 
+msgctxt "#30022"
+msgid "Open vfs.libtorrent settings"
+msgstr ""
+
+msgctxt "#30023"
+msgid "vfs.libtorrent is the add-on responsible for downloading the videos via BitTorrent"
+msgstr ""
+
 # -----------------------------------
 # Other strings (from 30400 to 30999)
 # -----------------------------------
