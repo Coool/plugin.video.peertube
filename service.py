@@ -51,8 +51,8 @@ class PeertubePlayer(xbmc.Player):
         any error and it was stopped willingly by the user. In this case we
         pause the download of the torrent to avoid downloading in background a
         video which may never be played again.
-        But if no file was being played, we ask the user if we should try again
-        to play the file: it supports the use case when the playback started
+        But if no file was being played, we ask the user if the download should
+        be paused or not: it supports the use case when the playback started
         whereas the portion of the file that was downloaded was not big enough.
         """
         # First check if the file that was being played belongs to this add-on
@@ -60,9 +60,9 @@ class PeertubePlayer(xbmc.Player):
         if self.torrent_url is not None:
             # Then check if the playback actually started: if the playback
             # didn't start (probably because there was a too small portion of
-            # the file that was downloaded), do not pause the torrent (Kodi 
-            # do not call onPlayBackError() in this case for some reason...)
-            # and ask the user what should be done.
+            # the file that was downloaded), ask the user if the download of
+            # the torrent should be paused (Kodi do not call onPlayBackError()
+            # in this case for some reason...).
             # Otherwise pause the torrent because we consider the user decided
             # to stop the playback.
             if self.playback_started:
@@ -72,13 +72,10 @@ class PeertubePlayer(xbmc.Player):
                 self.playback_started = False
             else:
                 self.debug(message="Playback stopped but an error was"
-                                    " detected: asking the user what should be"
-                                    " done.")
+                                    " detected: asking the user if the"
+                                    " download must be stopped.")
                 if kodi.open_yes_no_dialog(title=kodi.get_string(30423),
                                            message=kodi.get_string(30424)):
-                    self.debug(message="Trying to play the video again...")
-                    self.play(item=self.run_url)
-                else:
                     self.debug(message="Pausing the download...")
                     self.pause_torrent()
                     self.torrent_url = None
